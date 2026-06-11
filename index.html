@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外贸核心词汇表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    background: #f8f7f4;
+    color: #2c2a26;
+    padding: 32px 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #8a8578; margin-bottom: 32px; }
+
+  .section {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #7c6f5b;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .word-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+  }
+  .word-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+  }
+  .word-en {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c2a26;
+    min-width: 140px;
+  }
+  .word-phonetic {
+    font-size: 11px;
+    color: #b8b2a6;
+  }
+  .word-zh {
+    font-size: 13px;
+    color: #8a8578;
+  }
+  .word-example {
+    font-size: 12px;
+    color: #b8b2a6;
+    grid-column: 1 / -1;
+    padding-left: 148px;
+    margin-top: -4px;
+    padding-bottom: 6px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 4px;
+  }
+  .tag-hot { background: #fce4e4; color: #c45c5c; }
+  .tag-core { background: #e4f0e0; color: #6b8f5e; }
+  .tag-useful { background: #e8eef8; color: #5a7ab5; }
+
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: rgba(124,111,91,0.1);
+    color: #7c6f5b;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 11px;
+  }
+  .play-btn:hover {
+    background: #7c6f5b;
+    color: white;
+  }
+  .play-btn.playing {
+    background: #7c6f5b;
+    color: white;
+    animation: pulse 0.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .play-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #7c6f5b;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .play-all-btn:hover { opacity: 0.85; }
+  .play-all-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .play-all-btn .icon { font-size: 14px; }
+
+  .note {
+    background: rgba(124,111,91,0.05);
+    border-left: 3px solid #7c6f5b;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #8a8578;
+  }
+
+  @media (max-width: 600px) {
+    .word-grid { grid-template-columns: 1fr; }
+    .word-example { padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>外贸核心词汇表</h1>
+  <div class="subtitle">按场景分类 · 每天背15个 · 配合场景手册使用</div>
+
+  <button class="play-all-btn" onclick="playAllSection(this)"><span class="icon">&#9654;</span> 播放本组</button>
+
+  <!-- 场景1：单证与报关 -->
+  <div class="section">
+    <div class="section-title">📋 场景1：单证与报关</div>
+    <div class="word-grid">
+      <div class="word-item" data-word="Invoice">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Invoice</span>
+        <span class="word-zh">发票</span>
+        <button class="play-btn" onclick="speak('Invoice', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Proforma Invoice">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Proforma Invoice</span>
+        <span class="word-zh">形式发票 (PI)</span>
+        <button class="play-btn" onclick="speak('Proforma Invoice', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Commercial Invoice">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Commercial Invoice</span>
+        <span class="word-zh">商业发票 (CI)</span>
+        <button class="play-btn" onclick="speak('Commercial Invoice', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Packing List">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Packing List</span>
+        <span class="word-zh">装箱单 (PL)</span>
+        <button class="play-btn" onclick="speak('Packing List', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Bill of Lading">
+        <span class="word-en"><span class="tag tag-core">核心</span>Bill of Lading</span>
+        <span class="word-zh">提单 (BL)</span>
+        <button class="play-btn" onclick="speak('Bill of Lading', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Certificate of Origin">
+        <span class="word-en"><span class="tag tag-core">核心</span>Certificate of Origin</span>
+        <span class="word-zh">原产地证</span>
+        <button class="play-btn" onclick="speak('Certificate of Origin', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Form E">
+        <span class="word-en"><span class="tag tag-core">核心</span>Form E</span>
+        <span class="word-zh">中国-东盟原产地证</span>
+        <button class="play-btn" onclick="speak('Form E', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Declaration">
+        <span class="word-en"><span class="tag tag-core">核心</span>Declaration</span>
+        <span class="word-zh">申报</span>
+        <button class="play-btn" onclick="speak('Declaration', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Customs Declaration">
+        <span class="word-en"><span class="tag tag-core">核心</span>Customs Declaration</span>
+        <span class="word-zh">报关</span>
+        <button class="play-btn" onclick="speak('Customs Declaration', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Customs Clearance">
+        <span class="word-en"><span class="tag tag-core">核心</span>Customs Clearance</span>
+        <span class="word-zh">清关</span>
+        <button class="play-btn" onclick="speak('Customs Clearance', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Insurance">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Insurance</span>
+        <span class="word-zh">保险</span>
+        <button class="play-btn" onclick="speak('Insurance', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Inspection">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Inspection</span>
+        <span class="word-zh">检验</span>
+        <button class="play-btn" onclick="speak('Inspection', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Quota">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Quota</span>
+        <span class="word-zh">配额</span>
+        <button class="play-btn" onclick="speak('Quota', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Tariff">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Tariff</span>
+        <span class="word-zh">关税</span>
+        <button class="play-btn" onclick="speak('Tariff', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Duty">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Duty</span>
+        <span class="word-zh">税</span>
+        <button class="play-btn" onclick="speak('Duty', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景2：物流与运输 -->
+  <div class="section">
+    <div class="section-title">🚢 场景2：物流与运输</div>
+    <button class="play-all-btn" onclick="playAllSection(this)"><span class="icon">&#9654;</span> 播放本组</button>
+    <div class="word-grid">
+      <div class="word-item" data-word="Shipping">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Shipping</span>
+        <span class="word-zh">装运</span>
+        <button class="play-btn" onclick="speak('Shipping', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Shipment">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Shipment</span>
+        <span class="word-zh">货物</span>
+        <button class="play-btn" onclick="speak('Shipment', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Freight">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Freight</span>
+        <span class="word-zh">运费</span>
+        <button class="play-btn" onclick="speak('Freight', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Bill of Lading">
+        <span class="word-en"><span class="tag tag-core">核心</span>Bill of Lading</span>
+        <span class="word-zh">提单 (BL)</span>
+        <button class="play-btn" onclick="speak('Bill of Lading', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Telex Release">
+        <span class="word-en"><span class="tag tag-core">核心</span>Telex Release</span>
+        <span class="word-zh">电放</span>
+        <button class="play-btn" onclick="speak('Telex Release', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Booking">
+        <span class="word-en"><span class="tag tag-core">核心</span>Booking</span>
+        <span class="word-zh">订舱</span>
+        <button class="play-btn" onclick="speak('Booking', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Container">
+        <span class="word-en"><span class="tag tag-core">核心</span>Container</span>
+        <span class="word-zh">集装箱</span>
+        <button class="play-btn" onclick="speak('Container', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Loading">
+        <span class="word-en"><span class="tag tag-core">核心</span>Loading</span>
+        <span class="word-zh">装货</span>
+        <button class="play-btn" onclick="speak('Loading', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Port of Loading">
+        <span class="word-en"><span class="tag tag-core">核心</span>Port of Loading</span>
+        <span class="word-zh">装运港</span>
+        <button class="play-btn" onclick="speak('Port of Loading', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Port of Destination">
+        <span class="word-en"><span class="tag tag-core">核心</span>Port of Destination</span>
+        <span class="word-zh">目的港</span>
+        <button class="play-btn" onclick="speak('Port of Destination', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="ETA">
+        <span class="word-en"><span class="tag tag-useful">常用</span>ETA</span>
+        <span class="word-zh">预计到达时间</span>
+        <button class="play-btn" onclick="speak('E T A', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="ETD">
+        <span class="word-en"><span class="tag tag-useful">常用</span>ETD</span>
+        <span class="word-zh">预计离港时间</span>
+        <button class="play-btn" onclick="speak('E T D', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Truck">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Truck</span>
+        <span class="word-zh">卡车</span>
+        <button class="play-btn" onclick="speak('Truck', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Warehouse">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Warehouse</span>
+        <span class="word-zh">仓库</span>
+        <button class="play-btn" onclick="speak('Warehouse', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Transit">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Transit</span>
+        <span class="word-zh">转运</span>
+        <button class="play-btn" onclick="speak('Transit', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景3：付款与财务 -->
+  <div class="section">
+    <div class="section-title">💰 场景3：付款与财务</div>
+    <button class="play-all-btn" onclick="playAllSection(this)"><span class="icon">&#9654;</span> 播放本组</button>
+    <div class="word-grid">
+      <div class="word-item" data-word="Payment">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Payment</span>
+        <span class="word-zh">付款</span>
+        <button class="play-btn" onclick="speak('Payment', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Deposit">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Deposit</span>
+        <span class="word-zh">定金</span>
+        <button class="play-btn" onclick="speak('Deposit', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Balance">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Balance</span>
+        <span class="word-zh">尾款/余额</span>
+        <button class="play-btn" onclick="speak('Balance', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Telegraphic Transfer">
+        <span class="word-en"><span class="tag tag-core">核心</span>T/T (Telegraphic Transfer)</span>
+        <span class="word-zh">电汇</span>
+        <button class="play-btn" onclick="speak('Telegraphic Transfer', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Letter of Credit">
+        <span class="word-en"><span class="tag tag-core">核心</span>L/C (Letter of Credit)</span>
+        <span class="word-zh">信用证</span>
+        <button class="play-btn" onclick="speak('Letter of Credit', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Foreign Exchange">
+        <span class="word-en"><span class="tag tag-core">核心</span>Foreign Exchange</span>
+        <span class="word-zh">外汇</span>
+        <button class="play-btn" onclick="speak('Foreign Exchange', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Exchange Rate">
+        <span class="word-en"><span class="tag tag-core">核心</span>Exchange Rate</span>
+        <span class="word-zh">汇率</span>
+        <button class="play-btn" onclick="speak('Exchange Rate', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Wire Transfer">
+        <span class="word-en"><span class="tag tag-core">核心</span>Wire Transfer</span>
+        <span class="word-zh">银行转账</span>
+        <button class="play-btn" onclick="speak('Wire Transfer', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Remittance">
+        <span class="word-en"><span class="tag tag-core">核心</span>Remittance</span>
+        <span class="word-zh">汇款</span>
+        <button class="play-btn" onclick="speak('Remittance', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Invoice Amount">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Invoice Amount</span>
+        <span class="word-zh">发票金额</span>
+        <button class="play-btn" onclick="speak('Invoice Amount', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Currency">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Currency</span>
+        <span class="word-zh">货币</span>
+        <button class="play-btn" onclick="speak('Currency', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="U S D">
+        <span class="word-en"><span class="tag tag-useful">常用</span>USD</span>
+        <span class="word-zh">美元</span>
+        <button class="play-btn" onclick="speak('U S D', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Account">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Account</span>
+        <span class="word-zh">账户</span>
+        <button class="play-btn" onclick="speak('Account', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Bank Statement">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Bank Statement</span>
+        <span class="word-zh">银行对账单</span>
+        <button class="play-btn" onclick="speak('Bank Statement', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Receipt">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Receipt</span>
+        <span class="word-zh">收据</span>
+        <button class="play-btn" onclick="speak('Receipt', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景4：客户沟通 -->
+  <div class="section">
+    <div class="section-title">🤝 场景4：客户沟通</div>
+    <button class="play-all-btn" onclick="playAllSection(this)"><span class="icon">&#9654;</span> 播放本组</button>
+    <div class="word-grid">
+      <div class="word-item" data-word="Order">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Order</span>
+        <span class="word-zh">订单</span>
+        <button class="play-btn" onclick="speak('Order', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Quotation">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Quotation</span>
+        <span class="word-zh">报价</span>
+        <button class="play-btn" onclick="speak('Quotation', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Price">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Price</span>
+        <span class="word-zh">价格</span>
+        <button class="play-btn" onclick="speak('Price', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Quantity">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Quantity</span>
+        <span class="word-zh">数量</span>
+        <button class="play-btn" onclick="speak('Quantity', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Sample">
+        <span class="word-en"><span class="tag tag-core">核心</span>Sample</span>
+        <span class="word-zh">样品</span>
+        <button class="play-btn" onclick="speak('Sample', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Minimum Order Quantity">
+        <span class="word-en"><span class="tag tag-core">核心</span>Minimum Order Quantity</span>
+        <span class="word-zh">最小起订量 (MOQ)</span>
+        <button class="play-btn" onclick="speak('Minimum Order Quantity', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Delivery Time">
+        <span class="word-en"><span class="tag tag-core">核心</span>Delivery Time</span>
+        <span class="word-zh">交货时间</span>
+        <button class="play-btn" onclick="speak('Delivery Time', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Lead Time">
+        <span class="word-en"><span class="tag tag-core">核心</span>Lead Time</span>
+        <span class="word-zh">生产周期</span>
+        <button class="play-btn" onclick="speak('Lead Time', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Specifications">
+        <span class="word-en"><span class="tag tag-core">核心</span>Specifications</span>
+        <span class="word-zh">规格</span>
+        <button class="play-btn" onclick="speak('Specifications', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Model">
+        <span class="word-en"><span class="tag tag-core">核心</span>Model</span>
+        <span class="word-zh">型号</span>
+        <button class="play-btn" onclick="speak('Model', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Inquiry">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Inquiry</span>
+        <span class="word-zh">询盘</span>
+        <button class="play-btn" onclick="speak('Inquiry', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Enquiry">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Enquiry</span>
+        <span class="word-zh">询盘（英式）</span>
+        <button class="play-btn" onclick="speak('Enquiry', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Confirm">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Confirm</span>
+        <span class="word-zh">确认</span>
+        <button class="play-btn" onclick="speak('Confirm', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Dispatch">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Dispatch</span>
+        <span class="word-zh">发货</span>
+        <button class="play-btn" onclick="speak('Dispatch', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Warranty">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Warranty</span>
+        <span class="word-zh">保修</span>
+        <button class="play-btn" onclick="speak('Warranty', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景5：贸易条款 -->
+  <div class="section">
+    <div class="section-title">🌍 场景5：贸易条款 (Incoterms)</div>
+    <button class="play-all-btn" onclick="playAllSection(this)"><span class="icon">&#9654;</span> 播放本组</button>
+    <div class="word-grid">
+      <div class="word-item" data-word="F O B">
+        <span class="word-en"><span class="tag tag-hot">高频</span>FOB</span>
+        <span class="word-zh">离岸价（装运港船上交货）</span>
+        <button class="play-btn" onclick="speak('F O B', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="C I F">
+        <span class="word-en"><span class="tag tag-hot">高频</span>CIF</span>
+        <span class="word-zh">到岸价（成本+保险+运费）</span>
+        <button class="play-btn" onclick="speak('C I F', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="E X W">
+        <span class="word-en"><span class="tag tag-core">核心</span>EXW</span>
+        <span class="word-zh">工厂交货</span>
+        <button class="play-btn" onclick="speak('E X W', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="C F R">
+        <span class="word-en"><span class="tag tag-core">核心</span>CFR</span>
+        <span class="word-zh">成本加运费</span>
+        <button class="play-btn" onclick="speak('C F R', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Trade Terms">
+        <span class="word-en"><span class="tag tag-core">核心</span>Trade Terms</span>
+        <span class="word-zh">贸易条款</span>
+        <button class="play-btn" onclick="speak('Trade Terms', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Contract">
+        <span class="word-en"><span class="tag tag-core">核心</span>Contract</span>
+        <span class="word-zh">合同</span>
+        <button class="play-btn" onclick="speak('Contract', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Negotiation">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Negotiation</span>
+        <span class="word-zh">谈判</span>
+        <button class="play-btn" onclick="speak('Negotiation', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Agreement">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Agreement</span>
+        <span class="word-zh">协议</span>
+        <button class="play-btn" onclick="speak('Agreement', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Agent">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Agent</span>
+        <span class="word-zh">代理</span>
+        <button class="play-btn" onclick="speak('Agent', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Authorization">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Authorization</span>
+        <span class="word-zh">授权</span>
+        <button class="play-btn" onclick="speak('Authorization', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 第二批 ========== -->
+
+  <!-- 场景6：报价与谈判 -->
+  <div class="section">
+    <div class="section-title">💬 场景6：报价与谈判</div>
+    <div class="word-grid">
+      <div class="word-item" data-word="Quote">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Quote</span>
+        <span class="word-zh">报价（动词/名词）</span>
+        <button class="play-btn" onclick="speak('Quote', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Requote">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Requote</span>
+        <span class="word-zh">重新报价</span>
+        <button class="play-btn" onclick="speak('Requote', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Discount">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Discount</span>
+        <span class="word-zh">折扣</span>
+        <button class="play-btn" onclick="speak('Discount', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Commission">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Commission</span>
+        <span class="word-zh">佣金</span>
+        <button class="play-btn" onclick="speak('Commission', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Firm Offer">
+        <span class="word-en"><span class="tag tag-core">核心</span>Firm Offer</span>
+        <span class="word-zh">实盘报价</span>
+        <button class="play-btn" onclick="speak('Firm Offer', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Non-firm Offer">
+        <span class="word-en"><span class="tag tag-core">核心</span>Non-firm Offer</span>
+        <span class="word-zh">虚盘报价</span>
+        <button class="play-btn" onclick="speak('Non-firm Offer', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Valid">
+        <span class="word-en"><span class="tag tag-core">核心</span>Valid</span>
+        <span class="word-zh">有效的</span>
+        <button class="play-btn" onclick="speak('Valid', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Validity">
+        <span class="word-en"><span class="tag tag-core">核心</span>Validity</span>
+        <span class="word-zh">有效期</span>
+        <button class="play-btn" onclick="speak('Validity', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Profit Margin">
+        <span class="word-en"><span class="tag tag-core">核心</span>Profit Margin</span>
+        <span class="word-zh">利润率</span>
+        <button class="play-btn" onclick="speak('Profit Margin', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Cost">
+        <span class="word-en"><span class="tag tag-core">核心</span>Cost</span>
+        <span class="word-zh">成本</span>
+        <button class="play-btn" onclick="speak('Cost', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Unit Price">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Unit Price</span>
+        <span class="word-zh">单价</span>
+        <button class="play-btn" onclick="speak('Unit Price', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Total Amount">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Total Amount</span>
+        <span class="word-zh">总金额</span>
+        <button class="play-btn" onclick="speak('Total Amount', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Competitive">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Competitive</span>
+        <span class="word-zh">有竞争力的</span>
+        <button class="play-btn" onclick="speak('Competitive', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Bulk Order">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Bulk Order</span>
+        <span class="word-zh">大批量订单</span>
+        <button class="play-btn" onclick="speak('Bulk Order', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Counter-offer">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Counter-offer</span>
+        <span class="word-zh">还盘/还价</span>
+        <button class="play-btn" onclick="speak('Counter-offer', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景7：产品与技术 -->
+  <div class="section">
+    <div class="section-title">🏭 场景7：产品与技术（PE薄膜）</div>
+    <div class="word-grid">
+      <div class="word-item" data-word="Polyethylene">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Polyethylene</span>
+        <span class="word-zh">聚乙烯 (PE)</span>
+        <button class="play-btn" onclick="speak('Polyethylene', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Film">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Film</span>
+        <span class="word-zh">薄膜</span>
+        <button class="play-btn" onclick="speak('Film', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Thickness">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Thickness</span>
+        <span class="word-zh">厚度</span>
+        <button class="play-btn" onclick="speak('Thickness', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Width">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Width</span>
+        <span class="word-zh">宽度</span>
+        <button class="play-btn" onclick="speak('Width', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Length">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Length</span>
+        <span class="word-zh">长度</span>
+        <button class="play-btn" onclick="speak('Length', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Density">
+        <span class="word-en"><span class="tag tag-core">核心</span>Density</span>
+        <span class="word-zh">密度</span>
+        <button class="play-btn" onclick="speak('Density', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Tensile Strength">
+        <span class="word-en"><span class="tag tag-core">核心</span>Tensile Strength</span>
+        <span class="word-zh">拉伸强度</span>
+        <button class="play-btn" onclick="speak('Tensile Strength', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Elongation">
+        <span class="word-en"><span class="tag tag-core">核心</span>Elongation</span>
+        <span class="word-zh">伸长率</span>
+        <button class="play-btn" onclick="speak('Elongation', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Transparency">
+        <span class="word-en"><span class="tag tag-core">核心</span>Transparency</span>
+        <span class="word-zh">透明度</span>
+        <button class="play-btn" onclick="speak('Transparency', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Tear Resistance">
+        <span class="word-en"><span class="tag tag-core">核心</span>Tear Resistance</span>
+        <span class="word-zh">抗撕裂性</span>
+        <button class="play-btn" onclick="speak('Tear Resistance', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Moisture Barrier">
+        <span class="word-en"><span class="tag tag-core">核心</span>Moisture Barrier</span>
+        <span class="word-zh">防潮性</span>
+        <button class="play-btn" onclick="speak('Moisture Barrier', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="UV Resistant">
+        <span class="word-en"><span class="tag tag-core">核心</span>UV Resistant</span>
+        <span class="word-zh">抗紫外线</span>
+        <button class="play-btn" onclick="speak('UV Resistant', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Recyclable">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Recyclable</span>
+        <span class="word-zh">可回收的</span>
+        <button class="play-btn" onclick="speak('Recyclable', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Food Grade">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Food Grade</span>
+        <span class="word-zh">食品级</span>
+        <button class="play-btn" onclick="speak('Food Grade', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Custom Size">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Custom Size</span>
+        <span class="word-zh">定制尺寸</span>
+        <button class="play-btn" onclick="speak('Custom Size', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 场景8：商务邮件高频句型 -->
+  <div class="section">
+    <div class="section-title">✉️ 场景8：商务邮件高频句型</div>
+    <div class="word-grid">
+      <div class="word-item" data-word="Attached please find">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Attached please find</span>
+        <span class="word-zh">请查收附件</span>
+        <button class="play-btn" onclick="speak('Attached please find', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="For your reference">
+        <span class="word-en"><span class="tag tag-hot">高频</span>For your reference</span>
+        <span class="word-zh">供您参考</span>
+        <button class="play-btn" onclick="speak('For your reference', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Looking forward to your reply">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Looking forward to your reply</span>
+        <span class="word-zh">期待您的回复</span>
+        <button class="play-btn" onclick="speak('Looking forward to your reply', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Please do not hesitate to contact us">
+        <span class="word-en"><span class="tag tag-hot">高频</span>Please do not hesitate to contact us</span>
+        <span class="word-zh">如有问题请随时联系我们</span>
+        <button class="play-btn" onclick="speak('Please do not hesitate to contact us', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="As per your request">
+        <span class="word-en"><span class="tag tag-core">核心</span>As per your request</span>
+        <span class="word-zh">根据您的要求</span>
+        <button class="play-btn" onclick="speak('As per your request', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Please confirm at your earliest convenience">
+        <span class="word-en"><span class="tag tag-core">核心</span>Please confirm at your earliest convenience</span>
+        <span class="word-zh">请尽早确认</span>
+        <button class="play-btn" onclick="speak('Please confirm at your earliest convenience', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="We would like to inform you that">
+        <span class="word-en"><span class="tag tag-core">核心</span>We would like to inform you that</span>
+        <span class="word-zh">我们想通知您</span>
+        <button class="play-btn" onclick="speak('We would like to inform you that', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="We regret to inform you that">
+        <span class="word-en"><span class="tag tag-core">核心</span>We regret to inform you that</span>
+        <span class="word-zh">我们很遗憾地通知您</span>
+        <button class="play-btn" onclick="speak('We regret to inform you that', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Thank you for your prompt reply">
+        <span class="word-en"><span class="tag tag-core">核心</span>Thank you for your prompt reply</span>
+        <span class="word-zh">感谢您的及时回复</span>
+        <button class="play-btn" onclick="speak('Thank you for your prompt reply', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Please kindly advise">
+        <span class="word-en"><span class="tag tag-core">核心</span>Please kindly advise</span>
+        <span class="word-zh">请告知</span>
+        <button class="play-btn" onclick="speak('Please kindly advise', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Enclosed">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Enclosed</span>
+        <span class="word-zh">随附的</span>
+        <button class="play-btn" onclick="speak('Enclosed', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Hereby">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Hereby</span>
+        <span class="word-zh">特此</span>
+        <button class="play-btn" onclick="speak('Hereby', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Kindly">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Kindly</span>
+        <span class="word-zh">请（礼貌用语）</span>
+        <button class="play-btn" onclick="speak('Kindly', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Acknowledgement">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Acknowledgement</span>
+        <span class="word-zh">确认收到</span>
+        <button class="play-btn" onclick="speak('Acknowledgement', this)">&#9654;</button>
+      </div>
+      <div class="word-item" data-word="Amendment">
+        <span class="word-en"><span class="tag tag-useful">常用</span>Amendment</span>
+        <span class="word-zh">修改</span>
+        <button class="play-btn" onclick="speak('Amendment', this)">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>学习方法：</strong>每天从一个场景里选15个词背。点击播放按钮听发音，先读英文，再说出中文意思，再看例句。背完新词后，复习前一天的词。用场景手册配合使用，学了马上用到工作场景中。
+  </div>
+</div>
+
+<script>
+let currentUtterance = null;
+
+function speak(text, btn) {
+  if (currentUtterance) {
+    speechSynthesis.cancel();
+    document.querySelectorAll('.play-btn.playing').forEach(b => b.classList.remove('playing'));
+  }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.85;
+  u.pitch = 1;
+  // 优先选择更自然的女声
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes('Samantha'))
+    || voices.find(v => v.name.includes('Karen'))
+    || voices.find(v => v.name.includes('Google US English'))
+    || voices.find(v => v.name.includes('Google UK English Female'))
+    || voices.find(v => v.lang === 'en-US' && v.name.includes('Female'))
+    || voices.find(v => v.lang === 'en-US');
+  if (preferred) u.voice = preferred;
+  currentUtterance = u;
+  btn.classList.add('playing');
+  u.onend = () => { btn.classList.remove('playing'); currentUtterance = null; };
+  u.onerror = () => { btn.classList.remove('playing'); currentUtterance = null; };
+  speechSynthesis.speak(u);
+}
+
+function playAllSection(btn) {
+  const section = btn.closest('.section');
+  const items = section.querySelectorAll('.word-item');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="icon">&#9646;&#9646;</span> 播放中...';
+  let i = 0;
+  function playNext() {
+    if (i >= items.length) {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="icon">&#9654;</span> 播放本组';
+      return;
+    }
+    const word = items[i].getAttribute('data-word');
+    const playBtn = items[i].querySelector('.play-btn');
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US';
+    u.rate = 0.85;
+    u.pitch = 1;
+    const voices = speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.name.includes('Samantha'))
+      || voices.find(v => v.name.includes('Karen'))
+      || voices.find(v => v.name.includes('Google US English'))
+      || voices.find(v => v.name.includes('Google UK English Female'))
+      || voices.find(v => v.lang === 'en-US' && v.name.includes('Female'))
+      || voices.find(v => v.lang === 'en-US');
+    if (preferred) u.voice = preferred;
+    playBtn.classList.add('playing');
+    u.onend = () => {
+      playBtn.classList.remove('playing');
+      i++;
+      setTimeout(playNext, 400);
+    };
+    u.onerror = () => {
+      playBtn.classList.remove('playing');
+      i++;
+      setTimeout(playNext, 400);
+    };
+    speechSynthesis.speak(u);
+  }
+  playNext();
+}
+</script>
+</body>
+</html>
