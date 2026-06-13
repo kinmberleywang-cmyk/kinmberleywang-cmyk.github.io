@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>英语通 · 全场景英语学习</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --bg-card: rgba(255,255,255,0.72);
+    --bg-card-hover: rgba(255,255,255,0.88);
+    --border: rgba(0,0,0,0.06);
+    --text: #2c2a26;
+    --text-muted: #8a8578;
+    --accent: #7c6f5b;
+    --accent-light: rgba(124,111,91,0.1);
+    --done: #8bab7e;
+    --danger: #c45c5c;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.04);
+    --shadow-hover: 0 6px 24px rgba(0,0,0,0.08);
+    --font: -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1916;
+      --bg-card: rgba(255,255,255,0.05);
+      --bg-card-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.06);
+      --text: #e8e4dc;
+      --text-muted: #9a9488;
+      --accent: #c4b69a;
+      --accent-light: rgba(196,182,154,0.08);
+      --shadow: 0 2px 12px rgba(0,0,0,0.2);
+      --shadow-hover: 0 6px 24px rgba(0,0,0,0.3);
+    }
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* 顶部导航 */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px) saturate(1.2);
+  }
+  .topbar h1 { font-size: 18px; font-weight: 600; }
+  .topbar .stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+  .topbar .stats span { display: flex; align-items: center; gap: 4px; }
+  .topbar .stats .num { font-weight: 700; color: var(--accent); font-size: 14px; }
+
+  /* 底部导航 */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    display: flex;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(20px) saturate(1.2);
+  }
+  .tabbar .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0 6px;
+    font-size: 10px; color: var(--text-muted);
+    cursor: pointer; transition: color 0.2s;
+    border: none; background: none; font-family: inherit;
+  }
+  .tabbar .tab.active { color: var(--accent); }
+  .tabbar .tab .tab-icon { font-size: 20px; margin-bottom: 2px; }
+
+  /* 页面容器 */
+  .page { display: none; padding: 20px; padding-bottom: 80px; }
+  .page.active { display: block; }
+
+  /* 通用卡片 */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(20px) saturate(1.2);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-hover); }
+  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ===== 词汇模块 ===== */
+  .vocab-category { margin-bottom: 24px; }
+  .vocab-cat-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .vocab-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px; margin-bottom: 8px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .vocab-item:hover { box-shadow: var(--shadow-hover); }
+  .vocab-item.expanded .vocab-detail { display: block; }
+  .vocab-main { flex: 1; }
+  .vocab-word { font-size: 15px; font-weight: 600; }
+  .vocab-phonetic { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .vocab-meaning { font-size: 13px; margin-top: 4px; }
+  .vocab-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .vocab-sentence { font-size: 13px; line-height: 1.7; margin-bottom: 6px; }
+  .vocab-sentence .en { font-weight: 500; }
+  .vocab-sentence .zh { color: var(--text-muted); font-size: 12px; }
+  .vocab-context { font-size: 12px; color: var(--text-muted); background: var(--accent-light); padding: 8px 10px; border-radius: var(--radius-sm); margin-top: 6px; line-height: 1.6; }
+
+  .speak-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    border: none; border-radius: 50%;
+    background: var(--accent-light); color: var(--accent);
+    font-size: 12px; cursor: pointer; flex-shrink: 0;
+    transition: all 0.2s; padding: 0;
+  }
+  .speak-btn:hover { background: var(--accent); color: #fff; }
+  .speak-btn.playing { background: var(--accent); color: #fff; animation: pulse 0.8s ease infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.15)} }
+
+  .vocab-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .vocab-filter {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-family: inherit;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  }
+  .vocab-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .vocab-mastered { font-size: 11px; color: var(--done); margin-left: auto; cursor: pointer; border: none; background: none; font-family: inherit; }
+  .vocab-mastered.done { color: var(--done); }
+
+  /* ===== 口语模块 ===== */
+  .scene-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .scene-btn {
+    padding: 8px 16px; border-radius: 20px;
+    font-size: 12px; font-family: inherit;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  }
+  .scene-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .dialog-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  }
+  .dialog-line { display: flex; gap: 10px; margin-bottom: 12px; }
+  .dialog-line.user { flex-direction: row-reverse; }
+  .dialog-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+    background: var(--accent-light);
+  }
+  .dialog-line.user .dialog-avatar { background: rgba(139,175,126,0.15); }
+  .dialog-bubble {
+    max-width: 75%; padding: 10px 14px;
+    border-radius: 12px; font-size: 13px; line-height: 1.6;
+  }
+  .dialog-line:not(.user) .dialog-bubble { background: var(--bg-card-hover); }
+  .dialog-line.user .dialog-bubble { background: var(--accent-light); }
+
+  .dialog-input-row { display: flex; gap: 8px; margin-top: 12px; }
+  .dialog-input {
+    flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; font-size: 13px; font-family: inherit;
+    background: var(--bg); color: var(--text);
+  }
+  .dialog-input:focus { outline: none; border-color: var(--accent); }
+
+  .dialog-submit {
+    padding: 10px 18px; border: none; border-radius: var(--radius-sm);
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-family: inherit; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .dialog-submit:hover { opacity: 0.85; }
+  .dialog-submit:disabled { opacity: 0.5; }
+
+  .mic-btn {
+    width: 40px; height: 40px; border: none; border-radius: 50%;
+    background: var(--bg-card); border: 1px solid var(--border);
+    font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .mic-btn:hover { border-color: var(--accent); }
+  .mic-btn.recording {
+    background: var(--danger); color: #fff; border-color: var(--danger);
+    animation: mic-pulse 1s ease infinite;
+  }
+  @keyframes mic-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(196,92,92,0.3)}50%{box-shadow:0 0 0 8px rgba(196,92,92,0)} }
+
+  .dialog-feedback {
+    margin-top: 12px; padding: 12px;
+    background: var(--accent-light); border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent);
+    font-size: 12px; line-height: 1.7; display: none;
+  }
+
+  /* ===== 语法模块 ===== */
+  .grammar-card { cursor: pointer; }
+  .grammar-card.expanded .grammar-detail { display: block; }
+  .grammar-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .grammar-example { padding: 8px 12px; background: var(--accent-light); border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 13px; line-height: 1.7; }
+  .grammar-example .wrong { color: var(--danger); text-decoration: line-through; }
+  .grammar-example .right { color: var(--done); font-weight: 500; }
+  .grammar-quiz { margin-top: 12px; }
+  .grammar-quiz .quiz-q { font-size: 13px; margin-bottom: 8px; font-weight: 500; }
+  .grammar-quiz .quiz-options { display: flex; flex-direction: column; gap: 6px; }
+  .grammar-quiz .quiz-opt {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text);
+    cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .grammar-quiz .quiz-opt:hover { border-color: var(--accent); }
+  .grammar-quiz .quiz-opt.correct { background: rgba(139,175,126,0.15); border-color: var(--done); color: var(--done); }
+  .grammar-quiz .quiz-opt.wrong { background: rgba(196,92,92,0.1); border-color: var(--danger); color: var(--danger); }
+  .grammar-quiz .quiz-opt:disabled { cursor: default; }
+  .quiz-explain { margin-top: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.6; display: none; }
+
+  /* ===== 听力模块 ===== */
+  .listen-card { margin-bottom: 12px; }
+  .listen-play {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px; background: var(--accent-light);
+    border-radius: var(--radius-sm); cursor: pointer;
+    border: none; width: 100%; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .listen-play:hover { background: var(--accent); color: #fff; }
+  .listen-play .play-icon { font-size: 24px; }
+  .listen-play .play-text { font-size: 13px; text-align: left; flex: 1; }
+  .listen-play .play-speed { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+  .listen-options { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .listen-opt {
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; font-family: inherit; background: var(--bg); color: var(--text);
+    cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .listen-opt:hover { border-color: var(--accent); }
+  .listen-opt.correct { background: rgba(139,175,126,0.15); border-color: var(--done); }
+  .listen-opt.wrong { background: rgba(196,92,92,0.1); border-color: var(--danger); }
+  .listen-opt:disabled { cursor: default; }
+  .listen-answer { margin-top: 10px; font-size: 12px; color: var(--text-muted); line-height: 1.7; display: none; padding: 10px; background: var(--accent-light); border-radius: var(--radius-sm); }
+
+  .speed-btns { display: flex; gap: 6px; margin-bottom: 12px; }
+  .speed-btn {
+    padding: 4px 12px; border-radius: 12px; font-size: 11px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    cursor: pointer; font-family: inherit;
+  }
+  .speed-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ===== 进度模块 ===== */
+  .progress-summary {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .progress-summary-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 10px; text-align: center; backdrop-filter: blur(20px) saturate(1.2);
+  }
+  .progress-summary-item .ps-num { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .progress-summary-item .ps-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .progress-module { margin-bottom: 16px; }
+  .progress-module-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: none;
+  }
+  .progress-module-header .pmh-left { display: flex; align-items: center; gap: 8px; }
+  .progress-module-header .pmh-icon { font-size: 18px; }
+  .progress-module-header .pmh-title { font-size: 14px; font-weight: 600; }
+  .progress-module-header .pmh-stats { font-size: 12px; color: var(--text-muted); }
+  .progress-module-header .pmh-bar { display: flex; align-items: center; gap: 8px; }
+  .progress-module-header .pmh-pct { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .progress-module-body {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius);
+    padding: 14px;
+  }
+
+  .progress-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .progress-chip {
+    padding: 6px 12px; border-radius: 16px; font-size: 11px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .progress-chip.done { background: rgba(139,175,126,0.12); border-color: var(--done); color: var(--done); }
+
+  .progress-bar-wrap { margin-top: 10px; }
+  .progress-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .progress-bar-track { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.4s; }
+  .progress-bar-fill.done { background: var(--done); }
+
+  .progress-streak {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 16px; text-align: center;
+  }
+  .progress-streak .streak-num { font-size: 36px; font-weight: 700; color: var(--accent); }
+  .progress-streak .streak-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  @media (max-width: 500px) { .progress-summary { grid-template-columns: 1fr 1fr; } }
+
+  .export-btn {
+    padding: 10px 24px; border: none; border-radius: var(--radius-sm);
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-family: inherit; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .export-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>英语通</h1>
+  <div class="stats">
+    <span>已学 <span class="num" id="statLearned">0</span> 词</span>
+    <span>连续 <span class="num" id="statDays">1</span> 天</span>
+  </div>
+</div>
+
+<!-- ===== 词汇页 ===== -->
+<div class="page active" id="page-vocab">
+  <div class="vocab-filters" id="vocabFilters"></div>
+  <div id="vocabList"></div>
+</div>
+
+<!-- ===== 口语页 ===== -->
+<div class="page" id="page-speaking">
+  <div class="scene-selector" id="sceneSelector"></div>
+  <div class="dialog-box" id="dialogBox"></div>
+  <div class="dialog-feedback" id="dialogFeedback"></div>
+</div>
+
+<!-- ===== 语法页 ===== -->
+<div class="page" id="page-grammar">
+  <div id="grammarList"></div>
+</div>
+
+<!-- ===== 听力页 ===== -->
+<div class="page" id="page-listening">
+  <div class="speed-btns">
+    <button class="speed-btn active" data-speed="0.7">慢速</button>
+    <button class="speed-btn" data-speed="0.85">正常</button>
+    <button class="speed-btn" data-speed="1.0">快速</button>
+  </div>
+  <div id="listenList"></div>
+</div>
+
+<!-- ===== 进度页 ===== -->
+<div class="page" id="page-progress">
+  <div class="progress-streak" id="progressStreak"></div>
+  <div class="progress-summary" id="progressSummary"></div>
+  <div id="progressModules"></div>
+  <div style="text-align:center;margin-top:16px">
+    <button class="export-btn" onclick="exportProgress()">导出进度</button>
+    <div id="exportMsg" style="font-size:11px;color:var(--text-muted);margin-top:6px;display:none"></div>
+  </div>
+</div>
+
+<!-- 底部导航 -->
+<div class="tabbar">
+  <button class="tab active" data-page="vocab"><span class="tab-icon">📚</span>词汇</button>
+  <button class="tab" data-page="speaking"><span class="tab-icon">🗣️</span>口语</button>
+  <button class="tab" data-page="grammar"><span class="tab-icon">✏️</span>语法</button>
+  <button class="tab" data-page="listening"><span class="tab-icon">🎧</span>听力</button>
+  <button class="tab" data-page="progress"><span class="tab-icon">📊</span>进度</button>
+</div>
+
+<script>
+// ===== 数据库 =====
+const vocabDB = [
+  // =====================================================
+  // 一、外贸商务（约60词）
+  // =====================================================
+
+  // -- 1.1 贸易术语 --
+  { cat:'外贸商务', subcat:'贸易术语', word:'quotation', phonetic:'/kwəˈteɪʃn/', meaning:'n. 报价；报价单', sentence:'Please send us the quotation for 500 units.', zh:'请发给我们500件的报价单。', context:'外贸最基础的文件之一。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'FOB', phonetic:'Free On Board', meaning:'n. 离岸价', sentence:'We offer FOB Shenzhen at $12.50 per piece.', zh:'FOB深圳价每件12.50美元。', context:'最常见的贸易术语，货物越过船舷后风险转移。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'CIF', phonetic:'Cost, Insurance and Freight', meaning:'n. 到岸价', sentence:'The CIF price includes ocean freight and insurance.', zh:'CIF价格包含海运费和保险。', context:'比FOB多了运费和保险，买方更省心。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'L/C', phonetic:'Letter of Credit', meaning:'n. 信用证', sentence:'Payment by irrevocable L/C at sight.', zh:'不可即期信用证付款。', context:'国际贸易中银行担保的付款方式。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'MOQ', phonetic:'Minimum Order Quantity', meaning:'n. 最小起订量', sentence:'The MOQ for this item is 300 pieces.', zh:'这款产品的最小起订量是300件。', context:'谈判时经常需要协商的关键数字。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'lead time', phonetic:'/liːd taɪm/', meaning:'n. 交货周期', sentence:'The lead time is 25-30 days after deposit.', zh:'交货周期是收到定金后25-30天。', context:'从下单到交货的时间。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'proforma invoice', phonetic:'/ˌproʊfɔːrmə ˈɪnvɔɪs/', meaning:'n. 形式发票', sentence:'We will issue a proforma invoice for your reference.', zh:'我们会开具形式发票供您参考。', context:'正式合同前的预开发票。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'sample', phonetic:'/ˈsæmpl/', meaning:'n. 样品', sentence:'Could you send us a sample first?', zh:'能先寄个样品给我们吗？', context:'客户下单前通常要求看样品。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'deposit', phonetic:'/dɪˈpɑːzɪt/', meaning:'n. 定金/押金', sentence:'Please arrange the 30% deposit.', zh:'请安排30%的定金。', context:'通常定金比例在30%-50%之间。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'balance', phonetic:'/ˈbæləns/', meaning:'n. 余额；尾款', sentence:'The balance should be paid before shipment.', zh:'尾款应在发货前付清。', context:'定金之外的剩余款项。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'shipping', phonetic:'/ˈʃɪpɪŋ/', meaning:'n. 装运；运输', sentence:'When can you arrange the shipping?', zh:'你们什么时候能安排装运？', context:'货物发出的过程。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'customs', phonetic:'/ˈkʌstəmz/', meaning:'n. 海关', sentence:'The goods need to clear customs first.', zh:'货物需要先清关。', context:'进出口必经的政府检查环节。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'clearance', phonetic:'/ˈklɪrəns/', meaning:'n. 清关；通关', sentence:'Customs clearance usually takes 3-5 business days.', zh:'清关通常需要3-5个工作日。', context:'货物通过海关审查的过程。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'bill of lading', phonetic:'/bɪl əv ˈleɪdɪŋ/', meaning:'n. 提单', sentence:'Please send us the original bill of lading.', zh:'请寄给我们正本提单。', context:'海运中最重要的物权凭证。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'packing list', phonetic:'/ˈpækɪŋ lɪst/', meaning:'n. 装箱单', sentence:'The packing list shows the quantity and weight.', zh:'装箱单显示了每个箱子的数量和重量。', context:'随货同行的详细装箱信息。', difficulty:1 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'commercial invoice', phonetic:'/kəˈmɜːrʃl ˈɪnvɔɪs/', meaning:'n. 商业发票', sentence:'Please issue the commercial invoice for customs.', zh:'请开具商业发票用于清关。', context:'正式的交易凭证。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'certificate of origin', phonetic:'/sərˈtɪfɪkət əv ˈɔːrɪdʒɪn/', meaning:'n. 原产地证书', sentence:'We need a certificate of origin for import.', zh:'我们需要原产地证书用于进口手续。', context:'证明货物生产国的文件，影响关税。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'tariff', phonetic:'/ˈtærɪf/', meaning:'n. 关税', sentence:'The tariff on this product is 5%.', zh:'这个产品的关税是5%。', context:'进口商品需要缴纳的税。', difficulty:2 },
+  { cat:'外贸商务', subcat:'贸易术语', word:'ETA', phonetic:'Estimated Time of Arrival', meaning:'n. 预计到达时间', sentence:'What is the ETA for the shipment?', zh:'这批货的预计到达时间是什么时候？', context:'物流追踪常用。', difficulty:1 },
+
+  // -- 1.2 报价与谈判 --
+  { cat:'外贸商务', subcat:'报价谈判', word:'negotiate', phonetic:'/nɪˈɡoʊʃieɪt/', meaning:'v. 谈判；协商', sentence:'We need to negotiate the price further.', zh:'我们需要进一步协商价格。', context:'外贸核心技能之一。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'discount', phonetic:'/ˈdɪskaʊnt/', meaning:'n. 折扣', sentence:'Can you give us a 5% discount for bulk orders?', zh:'大批量订单能给5%的折扣吗？', context:'量大从优的谈判筹码。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'profit', phonetic:'/ˈprɑːfɪt/', meaning:'n. 利润', sentence:'Our profit margin is very thin on this item.', zh:'这个产品的利润很薄。', context:'谈判中经常提到的关键词。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'margin', phonetic:'/ˈmɑːrdʒɪn/', meaning:'n. 利润率；差价', sentence:'We can\'t go lower than a 15% margin.', zh:'我们不能低于15%的利润率。', context:'和profit经常一起用。', difficulty:2 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'quote', phonetic:'/kwoʊt/', meaning:'v./n. 报价', sentence:'Could you quote us the best price for 1000 pieces?', zh:'能报一下1000件的最优价吗？', context:'quotation的动词形式。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'unit price', phonetic:'/ˈjuːnɪt praɪs/', meaning:'n. 单价', sentence:'What is the unit price for this model?', zh:'这款型号的单价是多少？', context:'每件/每个的价格。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'wholesale', phonetic:'/ˈhoʊlseɪl/', meaning:'n./adj. 批发（的）', sentence:'The wholesale price is much lower than retail.', zh:'批发价比零售价低很多。', context:'大批量采购的价格。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'retail', phonetic:'/ˈriːteɪl/', meaning:'n./adj. 零售（的）', sentence:'We only deal with wholesale, not retail.', zh:'我们只做批发，不做零售。', context:'和wholesale相对。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'bulk', phonetic:'/bʌlk/', meaning:'n. 大批量', sentence:'The more you order in bulk, the lower the price.', zh:'批量越大，价格越低。', context:'bulk order = 大批量订单。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'counteroffer', phonetic:'/ˈkaʊntərˌɔːfər/', meaning:'n. 还盘；还价', sentence:'We received your counteroffer and will discuss.', zh:'我们收到了您的还盘，会和管理层讨论。', context:'对方不接受报价时的反报价。', difficulty:2 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'concession', phonetic:'/kənˈseʃn/', meaning:'n. 让步', sentence:'We can make a concession on the delivery time.', zh:'我们可以在交货时间上让步。', context:'谈判中各退一步。', difficulty:2 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'terms', phonetic:'/tɜːrmz/', meaning:'n. 条款', sentence:'We need to agree on the payment terms first.', zh:'我们需要先确定付款条款。', context:'payment terms = 付款条款。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'warranty', phonetic:'/ˈwɔːrənti/', meaning:'n. 保修；质保', sentence:'This product comes with a 12-month warranty.', zh:'这个产品有12个月保修。', context:'客户很关心的售后保障。', difficulty:1 },
+  { cat:'外贸商务', subcat:'报价谈判', word:'validity', phonetic:'/vəˈlɪdəti/', meaning:'n. 有效期', sentence:'The quotation is valid for 30 days.', zh:'本报价有效期30天。', context:'报价单上必须注明。', difficulty:2 },
+
+  // -- 1.3 产品与质量 --
+  { cat:'外贸商务', subcat:'产品质量', word:'specification', phonetic:'/ˌspesɪfɪˈkeɪʃn/', meaning:'n. 规格；参数', sentence:'Please send us the product specifications.', zh:'请发给我们产品规格书。', context:'详细的技术参数说明。', difficulty:2 },
+  { cat:'外贸商务', subcat:'产品质量', word:'material', phonetic:'/məˈtɪriəl/', meaning:'n. 材料', sentence:'What material is this product made of?', zh:'这个产品是什么材料做的？', context:'客户经常问的第一个问题。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品质量', word:'quality', phonetic:'/ˈkwɑːləti/', meaning:'n. 质量', sentence:'We ensure the quality meets international standards.', zh:'我们确保质量符合国际标准。', context:'外贸谈判核心话题。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品质量', word:'defect', phonetic:'/ˈdiːfekt/', meaning:'n. 缺陷', sentence:'We found some defects in the last shipment.', zh:'我们在上一批货中发现了一些缺陷。', context:'质量问题时的关键词。', difficulty:2 },
+  { cat:'外贸商务', subcat:'产品质量', word:'inspection', phonetic:'/ɪnˈspekʃn/', meaning:'n. 检验；检查', sentence:'Third-party inspection is required before shipment.', zh:'发货前需要第三方检验。', context:'QC环节。', difficulty:2 },
+  { cat:'外贸商务', subcat:'产品质量', word:'certificate', phonetic:'/sərˈtɪfɪkət/', meaning:'n. 证书', sentence:'Do you have CE certification for this product?', zh:'这个产品有CE认证吗？', context:'各种认证证书。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品质量', word:'standard', phonetic:'/ˈstændərd/', meaning:'n. 标准', sentence:'This product meets EU safety standards.', zh:'这个产品符合欧盟安全标准。', context:'国际标准是卖点。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品质量', word:'prototype', phonetic:'/ˈproʊtətaɪp/', meaning:'n. 原型；样品', sentence:'We can make a prototype within 7 days.', zh:'我们可以在7天内做一个原型。', context:'正式生产前的样品。', difficulty:2 },
+  { cat:'外贸商务', subcat:'产品质量', word:'capacity', phonetic:'/kəˈpæsəti/', meaning:'n. 产能', sentence:'Our factory has a monthly capacity of 50,000 units.', zh:'我们工厂月产能5万件。', context:'客户关心你能不能按时交货。', difficulty:2 },
+
+  // -- 1.4 物流与运输 --
+  { cat:'外贸商务', subcat:'物流运输', word:'freight', phonetic:'/freɪt/', meaning:'n. 运费；货物', sentence:'Who will pay the freight charges?', zh:'谁来承担运费？', context:'物流成本的核心。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'ocean freight', phonetic:'/ˈoʊʃn freɪt/', meaning:'n. 海运', sentence:'Ocean freight is cheaper but takes longer.', zh:'海运便宜但时间长。', context:'外贸最常用的运输方式。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'air freight', phonetic:'/er freɪt/', meaning:'n. 空运', sentence:'We can ship by air freight if urgently needed.', zh:'如果急需可以空运。', context:'贵但快。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'container', phonetic:'/kənˈteɪnər/', meaning:'n. 集装箱', sentence:'A 20-foot container can hold about 28 CBM.', zh:'一个20尺集装箱大约能装28立方。', context:'海运的基本单位。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'shipment', phonetic:'/ˈʃɪpmənt/', meaning:'n. 发货；一批货', sentence:'The first shipment will be ready next week.', zh:'第一批货下周准备好。', context:'一次发运的货物。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'warehouse', phonetic:'/ˈwerhaʊs/', meaning:'n. 仓库', sentence:'The goods are stored in our warehouse.', zh:'货物存在我们的仓库里。', context:'仓储环节。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'logistics', phonetic:'/ləˈdʒɪstɪks/', meaning:'n. 物流', sentence:'We have a reliable logistics partner.', zh:'我们有可靠的物流合作伙伴。', context:'整体供应链管理。', difficulty:2 },
+  { cat:'外贸商务', subcat:'物流运输', word:'delivery', phonetic:'/dɪˈlɪvəri/', meaning:'n. 交付；送货', sentence:'What is the delivery time to Los Angeles?', zh:'到洛杉矶的交货时间是多久？', context:'从发货到客户收到的时间。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'port', phonetic:'/pɔːrt/', meaning:'n. 港口', sentence:'Which port will the goods be shipped from?', zh:'货物从哪个港口发出？', context:'装运港和目的港。', difficulty:1 },
+  { cat:'外贸商务', subcat:'物流运输', word:'transit', phonetic:'/ˈtrænzɪt/', meaning:'n. 运输；途中', sentence:'The goods are currently in transit.', zh:'货物目前在运输途中。', context:'in transit = 在途。', difficulty:2 },
+
+  // -- 1.5 客户沟通 --
+  { cat:'外贸商务', subcat:'客户沟通', word:'inquiry', phonetic:'/ɪnˈkwaɪri/', meaning:'n. 询盘；咨询', sentence:'We received an inquiry from a new client.', zh:'我们收到了一个新客户的询盘。', context:'外贸业务的起点。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'follow up', phonetic:'/ˈfɑːloʊ ʌp/', meaning:'v. 跟进', sentence:'I\'ll follow up with the client tomorrow.', zh:'我明天跟进这位客户。', context:'外贸最重要的习惯之一。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'catalog', phonetic:'/ˈkætəlɔːɡ/', meaning:'n. 产品目录', sentence:'We will send you our latest catalog.', zh:'我们会寄给您最新的产品目录。', context:'展示产品的必备材料。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'complaint', phonetic:'/kəmˈpleɪnt/', meaning:'n. 投诉', sentence:'We take every customer complaint seriously.', zh:'我们认真对待每一位客户的投诉。', context:'处理投诉是维护客户关系的关键。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'feedback', phonetic:'/ˈfiːdbæk/', meaning:'n. 反馈', sentence:'Thank you for your valuable feedback.', zh:'感谢您宝贵的反馈。', context:'客户意见。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'partnership', phonetic:'/ˈpɑːrtnərʃɪp/', meaning:'n. 合作关系', sentence:'We value long-term partnership with our clients.', zh:'我们重视与客户的长期合作关系。', context:'商务邮件常用表达。', difficulty:2 },
+  { cat:'外贸商务', subcat:'客户沟通', word:'prospect', phonetic:'/ˈprɑːspekt/', meaning:'n. 潜在客户', sentence:'We have 50 prospects in the pipeline.', zh:'我们有50个潜在客户在跟进中。', context:'pipeline = 销售漏斗。', difficulty:2 },
+
+  // -- 1.6 邮件沟通（外贸）--
+  { cat:'外贸商务', subcat:'邮件沟通', word:'dear', phonetic:'/dɪr/', meaning:'adj. 亲爱的', sentence:'Dear Sir or Madam,', zh:'尊敬的先生/女士：', context:'正式邮件开头。', difficulty:1 },
+  { cat:'外贸商务', subcat:'邮件沟通', word:'regards', phonetic:'/rɪˈɡɑːrdz/', meaning:'n. 致意', sentence:'Best regards, Kim', zh:'此致敬礼，Kim', context:'邮件结尾。', difficulty:1 },
+  { cat:'外贸商务', subcat:'邮件沟通', word:'enclosed', phonetic:'/ɪnˈkloʊzd/', meaning:'adj. 附件中的', sentence:'Please find the enclosed documents.', zh:'请查收附件中的文件。', context:'和attached意思一样。', difficulty:2 },
+  { cat:'外贸商务', subcat:'邮件沟通', word:'acknowledge', phonetic:'/əkˈnɑːlɪdʒ/', meaning:'v. 确认收到', sentence:'Please acknowledge receipt of this email.', zh:'请确认收到此邮件。', context:'正式确认。', difficulty:2 },
+
+  // -- 1.7 产品规格 --
+  { cat:'外贸商务', subcat:'产品规格', word:'dimension', phonetic:'/dɪˈmenʃn/', meaning:'n. 尺寸', sentence:'What are the dimensions of this product?', zh:'这个产品的尺寸是多少？', context:'长宽高。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品规格', word:'weight', phonetic:'/weɪt/', meaning:'n. 重量', sentence:'The gross weight is 25kg.', zh:'毛重25公斤。', context:'gross weight = 毛重，net weight = 净重。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品规格', word:'model', phonetic:'/ˈmɑːdl/', meaning:'n. 型号', sentence:'Which model are you interested in?', zh:'你对哪个型号感兴趣？', context:'产品型号。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品规格', word:'feature', phonetic:'/ˈfiːtʃər/', meaning:'n. 特点；功能', sentence:'What are the main features of this product?', zh:'这个产品的主要特点是什么？', context:'产品卖点。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品规格', word:'packaging', phonetic:'/ˈpækɪdʒɪŋ/', meaning:'n. 包装', sentence:'How is the product packaged?', zh:'产品怎么包装？', context:'包装方式影响运输成本。', difficulty:1 },
+  { cat:'外贸商务', subcat:'产品规格', word:'carton', phonetic:'/ˈkɑːrtn/', meaning:'n. 纸箱', sentence:'How many pieces per carton?', zh:'每个纸箱装多少件？', context:'装箱单位。', difficulty:1 },
+
+  // -- 1.8 客户关系 --
+  { cat:'外贸商务', subcat:'客户关系', word:'complain', phonetic:'/kəmˈpleɪn/', meaning:'v. 投诉', sentence:'The client complained about the delayed shipment.', zh:'客户投诉了延迟发货的事。', context:'处理投诉。', difficulty:1 },
+  { cat:'外贸商务', subcat:'客户关系', word:'replacement', phonetic:'/rɪˈpleɪsmənt/', meaning:'n. 替换品', sentence:'We will send a replacement immediately.', zh:'我们会立即寄出替换品。', context:'产品有问题时的解决方案。', difficulty:2 },
+  { cat:'外贸商务', subcat:'客户关系', word:'loyalty', phonetic:'/lɔɪəlti/', meaning:'n. 忠诚度', sentence:'We value customer loyalty.', zh:'我们重视客户忠诚度。', context:'长期合作的基础。', difficulty:2 },
+  { cat:'外贸商务', subcat:'客户关系', word:'satisfaction', phonetic:'/ˌsætɪsˈfækʃn/', meaning:'n. 满意度', sentence:'Customer satisfaction is our top priority.', zh:'客户满意度是我们的首要任务。', context:'服务目标。', difficulty:1 },
+
+  // -- 1.9 合同文件 --
+  { cat:'外贸商务', subcat:'合同文件', word:'contract', phonetic:'/ˈkɑːntrækt/', meaning:'n. 合同', sentence:'Please review and sign the contract.', zh:'请审核并签署合同。', context:'正式交易的法律文件。', difficulty:1 },
+  { cat:'外贸商务', subcat:'合同文件', word:'terms and conditions', phonetic:'', meaning:'n. 条款和条件', sentence:'Please read the terms and conditions carefully.', zh:'请仔细阅读条款和条件。', context:'合同中的法律条款。', difficulty:2 },
+  { cat:'外贸商务', subcat:'合同文件', word:'liability', phonetic:'/ˌlaɪəˈbɪləti/', meaning:'n. 责任；义务', sentence:'Who bears the liability for damaged goods?', zh:'谁承担货物损坏的责任？', context:'合同中的责任划分。', difficulty:3 },
+  { cat:'外贸商务', subcat:'合同文件', word:'arbitration', phonetic:'/ˌɑːrbɪˈtreɪʃn/', meaning:'n. 仲裁', sentence:'Any disputes will be settled by arbitration.', zh:'任何争议将通过仲裁解决。', context:'合同中的争议解决条款。', difficulty:3 },
+
+  // -- 1.10 支付方式 --
+  { cat:'外贸商务', subcat:'支付方式', word:'wire transfer', phonetic:'/waɪr trænsˈfɜːr/', meaning:'n. 电汇', sentence:'Payment by wire transfer to our bank account.', zh:'通过电汇付款到我们的银行账户。', context:'最常见的国际付款方式。', difficulty:1 },
+  { cat:'外贸商务', subcat:'支付方式', word:'T/T', phonetic:'Telegraphic Transfer', meaning:'n. 电汇', sentence:'We accept 30% T/T deposit.', zh:'我们接受30%电汇定金。', context:'T/T是wire transfer的缩写。', difficulty:1 },
+  { cat:'外贸商务', subcat:'支付方式', word:'currency', phonetic:'/ˈkʌrənsi/', meaning:'n. 货币', sentence:'What currency do you prefer for payment?', zh:'你偏好用什么货币付款？', context:'USD、EUR、RMB等。', difficulty:1 },
+  { cat:'外贸商务', subcat:'支付方式', word:'exchange rate', phonetic:'/ɪksˈtʃeɪndʒ reɪt/', meaning:'n. 汇率', sentence:'The exchange rate fluctuates daily.', zh:'汇率每天都在波动。', context:'影响报价和利润。', difficulty:2 },
+
+  // =====================================================
+  // 二、日常对话（约55词）
+  // =====================================================
+
+  // -- 2.1 餐饮 --
+  { cat:'日常对话', subcat:'餐饮', word:'reservation', phonetic:'/ˌrezərˈveɪʃn/', meaning:'n. 预订', sentence:'I have a reservation under Kim.', zh:'我预订了，名字是Kim。', context:'餐厅、酒店都用这个词。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'order', phonetic:'/ˈɔːrdər/', meaning:'v. 点餐', sentence:'Are you ready to order?', zh:'准备好点餐了吗？', context:'餐厅点菜最常用的一句话。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'bill', phonetic:'/bɪl/', meaning:'n. 账单', sentence:'Can I have the bill, please?', zh:'请买单。', context:'英国用bill，美国也用check。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'tip', phonetic:'/tɪp/', meaning:'n. 小费', sentence:'Is service charge included, or should I leave a tip?', zh:'服务费包含了还是需要给小费？', context:'美国、加拿大通常需要给15-20%小费。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'receipt', phonetic:'/rɪˈsiːt/', meaning:'n. 收据', sentence:'Could I have the receipt, please?', zh:'请给我收据。', context:'购物后索要小票，退税时也需要。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'menu', phonetic:'/ˈmenjuː/', meaning:'n. 菜单', sentence:'Could I see the menu, please?', zh:'能看一下菜单吗？', context:'最基础的餐厅用语。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'portion', phonetic:'/ˈpɔːrʃn/', meaning:'n. 份量', sentence:'The portions here are quite generous.', zh:'这里的份量很足。', context:'评价餐厅时常说。', difficulty:1 },
+  { cat:'日常对话', subcat:'餐饮', word:'ingredient', phonetic:'/ɪnˈɡriːdiənt/', meaning:'n. 食材', sentence:'What ingredients are in this dish?', zh:'这道菜里有什么食材？', context:'对食物过敏时必须问。', difficulty:2 },
+  { cat:'日常对话', subcat:'餐饮', word:'dessert', phonetic:'/dɪˈzɜːrt/', meaning:'n. 甜点', sentence:'The chocolate cake is our best dessert.', zh:'巧克力蛋糕是我们最好的甜点。', context:'餐后甜品。', difficulty:1 },
+
+  // -- 2.2 购物 --
+  { cat:'日常对话', subcat:'购物', word:'size', phonetic:'/saɪz/', meaning:'n. 尺码', sentence:'Do you have this in size M?', zh:'这个有M码吗？', context:'买衣服鞋包常用。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'fitting room', phonetic:'/ˈfɪtɪŋ ruːm/', meaning:'n. 试衣间', sentence:'Where is the fitting room?', zh:'试衣间在哪？', context:'买衣服时需要。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'refund', phonetic:'/ˈriːfʌnd/', meaning:'n./v. 退款', sentence:'Can I get a refund for this item?', zh:'这个能退款吗？', context:'退货时用。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'exchange', phonetic:'/ɪksˈtʃeɪndʒ/', meaning:'v./n. 换货', sentence:'I\'d like to exchange this for a different color.', zh:'我想换个颜色。', context:'不退款只换货时用。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'brand', phonetic:'/brænd/', meaning:'n. 品牌', sentence:'What brand is this?', zh:'这是什么品牌？', context:'购物时常见问题。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'try on', phonetic:'/traɪ ɒn/', meaning:'v. 试穿', sentence:'Can I try this on?', zh:'我能试穿一下吗？', context:'买衣服鞋包时用。', difficulty:1 },
+  { cat:'日常对话', subcat:'购物', word:'price tag', phonetic:'/praɪs tæɡ/', meaning:'n. 价格标签', sentence:'The price tag says $29.99.', zh:'价格标签上写的是29.99美元。', context:'看价格时用。', difficulty:1 },
+
+  // -- 2.3 出行 --
+  { cat:'日常对话', subcat:'出行', word:'subway', phonetic:'/ˈsʌbweɪ/', meaning:'n. 地铁', sentence:'Which subway line goes to the museum?', zh:'哪条地铁线去博物馆？', context:'美国叫subway，英国叫underground。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'bus stop', phonetic:'/bʌs stɑːp/', meaning:'n. 公交站', sentence:'Where is the nearest bus stop?', zh:'最近的公交站在哪？', context:'基础出行用语。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'fare', phonetic:'/fer/', meaning:'n. 车费', sentence:'How much is the fare to downtown?', zh:'到市中心的车费多少？', context:'公共交通的费用。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'transfer', phonetic:'/trænsˈfɜːr/', meaning:'v./n. 换乘', sentence:'You need to transfer at the next station.', zh:'你需要在下一站换乘。', context:'地铁公交换乘。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'destination', phonetic:'/ˌdestɪˈneɪʃn/', meaning:'n. 目的地', sentence:'What is your final destination?', zh:'你的最终目的地是哪里？', context:'打车或问路时用。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'route', phonetic:'/ruːt/', meaning:'n. 路线', sentence:'What is the best route to the airport?', zh:'去机场最好的路线是什么？', context:'问路或导航时用。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'traffic', phonetic:'/ˈtræfɪk/', meaning:'n. 交通', sentence:'The traffic is terrible during rush hour.', zh:'高峰期交通很堵。', context:'日常抱怨常用。', difficulty:1 },
+  { cat:'日常对话', subcat:'出行', word:'parking', phonetic:'/ˈpɑːrkɪŋ/', meaning:'n. 停车', sentence:'Is there free parking nearby?', zh:'附近有免费停车吗？', context:'开车出行必备。', difficulty:1 },
+
+  // -- 2.4 医疗健康 --
+  { cat:'日常对话', subcat:'医疗健康', word:'appointment', phonetic:'/əˈpɔɪntmənt/', meaning:'n. 预约', sentence:'I have a dentist appointment at 3.', zh:'我3点有个牙医预约。', context:'看医生、理发都用appointment。', difficulty:1 },
+  { cat:'日常对话', subcat:'医疗健康', word:'pharmacy', phonetic:'/ˈfɑːrməsi/', meaning:'n. 药房', sentence:'Is there a pharmacy nearby?', zh:'附近有药房吗？', context:'买药的地方，美国也叫drugstore。', difficulty:1 },
+  { cat:'日常对话', subcat:'医疗健康', word:'prescription', phonetic:'/prɪˈskrɪpʃn/', meaning:'n. 处方', sentence:'Do you have a prescription for this medicine?', zh:'这个药有处方吗？', context:'有些药需要医生处方。', difficulty:2 },
+  { cat:'日常对话', subcat:'医疗健康', word:'symptom', phonetic:'/ˈsɪmptəm/', meaning:'n. 症状', sentence:'What are your symptoms?', zh:'你的症状是什么？', context:'看病时医生会问。', difficulty:2 },
+  { cat:'日常对话', subcat:'医疗健康', word:'allergy', phonetic:'/ˈælərdʒi/', meaning:'n. 过敏', sentence:'I have a peanut allergy.', zh:'我对花生过敏。', context:'出国必须会说的一句话。', difficulty:1 },
+  { cat:'日常对话', subcat:'医疗健康', word:'headache', phonetic:'/ˈhedeɪk/', meaning:'n. 头痛', sentence:'I\'ve been having a headache for two days.', zh:'我头疼两天了。', context:'常见症状。', difficulty:1 },
+  { cat:'日常对话', subcat:'医疗健康', word:'fever', phonetic:'/ˈfiːvər/', meaning:'n. 发烧', sentence:'I think I have a fever.', zh:'我觉得我发烧了。', context:'体温升高。', difficulty:1 },
+
+  // -- 2.5 社交聊天 --
+  { cat:'日常对话', subcat:'社交聊天', word:'hang out', phonetic:'/hæŋ aʊt/', meaning:'出去玩、闲逛', sentence:'Do you want to hang out this weekend?', zh:'周末要一起出去玩吗？', context:'朋友间约出去玩的日常说法。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'by the way', phonetic:'', meaning:'顺便说一下', sentence:'By the way, have you met David?', zh:'顺便问一下，你见过David吗？', context:'转换话题时的过渡用语。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'keep in touch', phonetic:'', meaning:'保持联系', sentence:'Let\'s keep in touch!', zh:'保持联系！', context:'告别时常用。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'no worries', phonetic:'', meaning:'没关系', sentence:'Thanks for waiting. — No worries.', zh:'谢谢你的等待。— 没关系。', context:'比you\'s welcome更随意。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'make sense', phonetic:'', meaning:'有道理、说得通', sentence:'That makes sense.', zh:'有道理。', context:'表示理解对方说的话。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'break a leg', phonetic:'', meaning:'祝你好运（俚语）', sentence:'Your presentation is tomorrow? Break a leg!', zh:'你明天有演讲？祝你好运！', context:'演出前说good luck反而不吉利。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'catch up', phonetic:'/kætʃ ʌp/', meaning:'叙旧；赶上', sentence:'Let\'s catch up over coffee.', zh:'我们喝杯咖啡叙叙旧吧。', context:'很久没见的朋友约出来。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'on the same page', phonetic:'', meaning:'想法一致', sentence:'Are we on the same page about this?', zh:'我们对这件事的看法一致吗？', context:'团队协作中常用。', difficulty:2 },
+  { cat:'日常对话', subcat:'社交聊天', word:'drop a line', phonetic:'', meaning:'写封信/发个消息', sentence:'Drop me a line when you arrive.', zh:'到了给我发个消息。', context:'比较随意的告别语。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交聊天', word:'my treat', phonetic:'', meaning:'我请客', sentence:'Dinner tonight is my treat.', zh:'今晚晚饭我请。', context:'请客时说。', difficulty:1 },
+
+  // -- 2.6 天气 --
+  { cat:'日常对话', subcat:'天气', word:'weather', phonetic:'/ˈweðər/', meaning:'n. 天气', sentence:'What\'s the weather like today?', zh:'今天天气怎么样？', context:'最安全的聊天话题。', difficulty:1 },
+  { cat:'日常对话', subcat:'天气', word:'forecast', phonetic:'/ˈfɔːrkæst/', meaning:'n. 预报', sentence:'The forecast says it will rain tomorrow.', zh:'天气预报说明天会下雨。', context:'看天气预报。', difficulty:1 },
+  { cat:'日常对话', subcat:'天气', word:'sunny', phonetic:'/ˈsʌni/', meaning:'adj. 晴朗的', sentence:'It\'s a sunny day today.', zh:'今天是晴天。', context:'描述天气。', difficulty:1 },
+  { cat:'日常对话', subcat:'天气', word:'cloudy', phonetic:'/ˈklaʊdi/', meaning:'adj. 多云的', sentence:'It\'s cloudy today, might rain later.', zh:'今天多云，晚点可能下雨。', context:'描述天气。', difficulty:1 },
+  { cat:'日常对话', subcat:'天气', word:'rainy', phonetic:'/ˈreɪni/', meaning:'adj. 多雨的', sentence:'It\'s been rainy all week.', zh:'这一整周都在下雨。', context:'描述天气。', difficulty:1 },
+  { cat:'日常对话', subcat:'天气', word:'temperature', phonetic:'/ˈtemprətʃər/', meaning:'n. 温度', sentence:'What\'s the temperature today?', zh:'今天气温多少度？', context:'问温度。', difficulty:1 },
+
+  // -- 2.7 银行金融 --
+  { cat:'日常对话', subcat:'银行金融', word:'account', phonetic:'/əˈkaʊnt/', meaning:'n. 账户', sentence:'I\'d like to open a bank account.', zh:'我想开一个银行账户。', context:'出国必备。', difficulty:1 },
+  { cat:'日常对话', subcat:'银行金融', word:'withdraw', phonetic:'/wɪðˈdrɔː/', meaning:'v. 取款', sentence:'I\'d like to withdraw some cash.', zh:'我想取一些现金。', context:'ATM取钱。', difficulty:1 },
+  { cat:'日常对话', subcat:'银行金融', word:'credit card', phonetic:'/ˈkredɪt kɑːrd/', meaning:'n. 信用卡', sentence:'Do you accept credit cards?', zh:'收信用卡吗？', context:'付款方式。', difficulty:1 },
+  { cat:'日常对话', subcat:'银行金融', word:'cash', phonetic:'/kæʃ/', meaning:'n. 现金', sentence:'I only have cash.', zh:'我只有现金。', context:'付款方式。', difficulty:1 },
+
+  // -- 2.8 住房 --
+  { cat:'日常对话', subcat:'住房', word:'apartment', phonetic:'/əˈpɑːrtmənt/', meaning:'n. 公寓', sentence:'I\'m looking for a furnished apartment.', zh:'我在找带家具的公寓。', context:'租房。', difficulty:1 },
+  { cat:'日常对话', subcat:'住房', word:'lease', phonetic:'/liːs/', meaning:'n. 租约', sentence:'The lease is for one year.', zh:'租约是一年的。', context:'租房合同。', difficulty:1 },
+  { cat:'日常对话', subcat:'住房', word:'landlord', phonetic:'/ˈlændlɔːrd/', meaning:'n. 房东', sentence:'The landlord is very nice.', zh:'房东人很好。', context:'租房相关。', difficulty:1 },
+  { cat:'日常对话', subcat:'住房', word:'tenant', phonetic:'/ˈtenənt/', meaning:'n. 租客', sentence:'Are you looking for a new tenant?', zh:'你们在找新租客吗？', context:'租房相关。', difficulty:1 },
+
+  // -- 2.9 社交 --
+  { cat:'日常对话', subcat:'社交', word:'introduce', phonetic:'/ˌɪntrəˈduːs/', meaning:'v. 介绍', sentence:'Let me introduce myself.', zh:'让我自我介绍一下。', context:'社交场合。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交', word:'compliment', phonetic:'/ˈkɑːmplɪmənt/', meaning:'n. 赞美', sentence:'Thank you for the compliment.', zh:'谢谢你的赞美。', context:'社交礼仪。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交', word:'apologize', phonetic:'/əˈpɑːlədʒaɪz/', meaning:'v. 道歉', sentence:'I apologize for the late reply.', zh:'抱歉回复晚了。', context:'正式道歉。', difficulty:1 },
+  { cat:'日常对话', subcat:'社交', word:'congratulations', phonetic:'/kənˌɡrætʃəˈleɪʃnz/', meaning:'n. 恭喜', sentence:'Congratulations on your new job!', zh:'恭喜你找到新工作！', context:'祝贺别人。', difficulty:1 },
+
+  // =====================================================
+  // 三、出国旅行（约45词）
+  // =====================================================
+
+  // -- 3.1 机场 --
+  { cat:'出国旅行', subcat:'机场', word:'boarding pass', phonetic:'/ˈbɔːrdɪŋ pæs/', meaning:'n. 登机牌', sentence:'May I see your boarding pass?', zh:'请出示您的登机牌。', context:'机场值机后拿到的凭证。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'boarding gate', phonetic:'/ˈbɔːrdɪŋ ɡeɪt/', meaning:'n. 登机口', sentence:'The boarding gate is B12.', zh:'登机口是B12。', context:'机场广播里最常听到的词。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'departure', phonetic:'/dɪˈpɑːrtʃər/', meaning:'n. 出发；离境', sentence:'What time is your departure?', zh:'你几点出发？', context:'departure lounge = 候机厅。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'arrival', phonetic:'/əˈraɪvl/', meaning:'n. 到达', sentence:'The arrival time is 3:30 PM.', zh:'到达时间是下午3:30。', context:'arrival hall = 到达大厅。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'delay', phonetic:'/dɪˈleɪ/', meaning:'n./v. 延误', sentence:'The flight is delayed by two hours.', zh:'航班延误了两小时。', context:'出门最怕听到的词。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'terminal', phonetic:'/ˈtɜːrmɪnl/', meaning:'n. 航站楼', sentence:'Which terminal does China Airlines use?', zh:'中华航空在哪个航站楼？', context:'大机场有多个航站楼。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'connecting flight', phonetic:'/kəˈnektɪŋ flaɪt/', meaning:'n. 转机航班', sentence:'I have a connecting flight to Tokyo.', zh:'我有一班转机去东京的航班。', context:'不是直飞时需要确认的。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'layover', phonetic:'/ˈleɪoʊvər/', meaning:'n. 中途停留', sentence:'We have a 3-hour layover in Singapore.', zh:'我们在新加坡中转3小时。', context:'转机等待时间。', difficulty:2 },
+  { cat:'出国旅行', subcat:'机场', word:'customs', phonetic:'/ˈkʌstəmz/', meaning:'n. 海关', sentence:'Please go through customs.', zh:'请过海关。', context:'入境时检查护照和行李的地方。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'luggage claim', phonetic:'/ˈlʌɡɪdʒ kleɪm/', meaning:'n. 行李提取处', sentence:'Your luggage is at claim 3.', zh:'您的行李在3号提取处。', context:'下飞机后取行李的地方。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'currency exchange', phonetic:'/ˈkʌrənsi ɪksˈtʃeɪndʒ/', meaning:'n. 货币兑换', sentence:'Where is the currency exchange counter?', zh:'货币兑换柜台在哪？', context:'机场、酒店都有的换钱地方。', difficulty:1 },
+  { cat:'出国旅行', subcat:'机场', word:'duty-free', phonetic:'/ˈdjuːti friː/', meaning:'adj. 免税的', sentence:'I bought some perfume at the duty-free shop.', zh:'我在免税店买了些香水。', context:'机场里的免税商店。', difficulty:1 },
+
+  // -- 3.2 酒店 --
+  { cat:'出国旅行', subcat:'酒店', word:'check in', phonetic:'/tʃek ɪn/', meaning:'v. 办理入住', sentence:'I\'d like to check in, please.', zh:'我想办理入住。', context:'到达酒店第一件事。', difficulty:1 },
+  { cat:'出国旅行', subcat:'酒店', word:'check out', phonetic:'/tʃek aʊt/', meaning:'v. 退房', sentence:'What time is checkout?', zh:'几点退房？', context:'离开酒店时。', difficulty:1 },
+  { cat:'出国旅行', subcat:'酒店', word:'vacancy', phonetic:'/ˈveɪkənsi/', meaning:'n. 空房', sentence:'Do you have any rooms available tonight?', zh:'今晚还有空房吗？', context:'no vacancy = 满房。', difficulty:1 },
+  { cat:'出国旅行', subcat:'酒店', word:'suite', phonetic:'/swiːt/', meaning:'n. 套房', sentence:'Can I upgrade to a suite?', zh:'我能升级到套房吗？', context:'比普通房间更高级。', difficulty:1 },
+  { cat:'出国旅行', subcat:'酒店', word:'complimentary', phonetic:'/ˌkɑːmplɪˈmentəri/', meaning:'adj. 赠送的；免费的', sentence:'Is breakfast complimentary?', zh:'早餐是免费的吗？', context:'complimentary breakfast = 免费早餐。', difficulty:1 },
+  { cat:'出国旅行', subcat:'酒店', word:'concierge', phonetic:'/ˌkɑːnsiˈerʒ/', meaning:'n. 礼宾部', sentence:'The concierge can help you book a taxi.', zh:'礼宾部可以帮你叫出租车。', context:'酒店前台旁边的服务台。', difficulty:2 },
+  { cat:'出国旅行', subcat:'酒店', word:'room service', phonetic:'/ruːm ˈsɜːrvɪs/', meaning:'n. 客房服务', sentence:'Can I order room service?', zh:'我能点客房服务吗？', context:'送到房间的餐饮服务。', difficulty:1 },
+
+  // -- 3.3 紧急情况 --
+  { cat:'出国旅行', subcat:'紧急情况', word:'emergency', phonetic:'/ɪˈmɜːrdʒənsi/', meaning:'n. 紧急情况', sentence:'This is an emergency! Please call an ambulance.', zh:'这是紧急情况！请叫救护车。', context:'最重要的一句话。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'help', phonetic:'/help/', meaning:'v./n. 帮助', sentence:'Help! I need help!', zh:'救命！我需要帮助！', context:'最基本的求助。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'police', phonetic:'/pəˈliːs/', meaning:'n. 警察', sentence:'Where is the nearest police station?', zh:'最近的警察局在哪？', context:'遇到问题找警察。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'hospital', phonetic:'/ˈhɑːspɪtl/', meaning:'n. 医院', sentence:'I need to go to the hospital.', zh:'我需要去医院。', context:'紧急就医。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'lost', phonetic:'/lɑːst/', meaning:'adj. 迷路的', sentence:'I\'m lost. Can you help me?', zh:'我迷路了，能帮我吗？', context:'迷路时求助。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'stolen', phonetic:'/ˈstoʊlən/', meaning:'adj. 被偷的', sentence:'My wallet was stolen!', zh:'我的钱包被偷了！', context:'财物丢失时用。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'passport', phonetic:'/ˈpæspɔːrt/', meaning:'n. 护照', sentence:'I lost my passport!', zh:'我的护照丢了！', context:'最重要的证件。', difficulty:1 },
+  { cat:'出国旅行', subcat:'紧急情况', word:'embassy', phonetic:'/ˈembəsi/', meaning:'n. 大使馆', sentence:'Where is the Chinese embassy?', zh:'中国大使馆在哪？', context:'护照丢了可以去大使馆补办。', difficulty:2 },
+
+  // -- 3.4 观光购物 --
+  { cat:'出国旅行', subcat:'观光购物', word:'souvenir', phonetic:'/ˌsuːvəˈnɪr/', meaning:'n. 纪念品', sentence:'I bought some souvenirs for my friends.', zh:'我给朋友们买了些纪念品。', context:'旅游景点周边商店的主要商品。', difficulty:1 },
+  { cat:'出国旅行', subcat:'观光购物', word:'itinerary', phonetic:'/aɪˈtɪnəreri/', meaning:'n. 行程安排', sentence:'Could you recommend an itinerary for 3 days?', zh:'能推荐一个3天的行程吗？', context:'自己做攻略时用。', difficulty:2 },
+  { cat:'出国旅行', subcat:'观光购物', word:'attraction', phonetic:'/əˈtrækʃn/', meaning:'n. 景点', sentence:'What are the top attractions in Paris?', zh:'巴黎最热门的景点有哪些？', context:'旅游攻略关键词。', difficulty:1 },
+  { cat:'出国旅行', subcat:'观光购物', word:'guided tour', phonetic:'/ˈɡaɪdɪd tʊr/', meaning:'n. 导览团', sentence:'Is there a guided tour in English?', zh:'有英文导览吗？', context:'跟团游。', difficulty:1 },
+  { cat:'出国旅行', subcat:'观光购物', word:'admission', phonetic:'/ədˈmɪʃn/', meaning:'n. 入场费', sentence:'The admission fee is $15.', zh:'入场费是15美元。', context:'景点门票。', difficulty:1 },
+  { cat:'出国旅行', subcat:'观光购物', word:'map', phonetic:'/mæp/', meaning:'n. 地图', sentence:'Do you have a map of the city?', zh:'有城市地图吗？', context:'问路必备。', difficulty:1 },
+  { cat:'出国旅行', subcat:'观光购物', word:'excursion', phonetic:'/ɪkˈskɜːrʃn/', meaning:'n. 短途旅行', sentence:'We planned an excursion to the countryside.', zh:'我们计划了一次乡村短途旅行。', context:'一日游。', difficulty:2 },
+  { cat:'出国旅行', subcat:'观光购物', word:'overseas', phonetic:'/ˌoʊvərˈsiːz/', meaning:'adv./adj. 海外（的）', sentence:'I\'m traveling overseas for the first time.', zh:'我第一次出国旅行。', context:'overseas Chinese = 海外华人。', difficulty:1 },
+
+  // -- 3.5 餐厅（旅行）--
+  { cat:'出国旅行', subcat:'餐厅', word:'appetizer', phonetic:'/ˈæpɪtaɪzər/', meaning:'n. 开胃菜', sentence:'Would you like to start with an appetizer?', zh:'想先来个开胃菜吗？', context:'正式西餐第一道。', difficulty:1 },
+  { cat:'出国旅行', subcat:'餐厅', word:'main course', phonetic:'/meɪn kɔːrs/', meaning:'n. 主菜', sentence:'What would you like for your main course?', zh:'主菜想吃什么？', context:'西餐核心。', difficulty:1 },
+  { cat:'出国旅行', subcat:'餐厅', word:'dessert', phonetic:'/dɪˈzɜːrt/', meaning:'n. 甜点', sentence:'We have chocolate cake for dessert.', zh:'我们有巧克力蛋糕做甜点。', context:'餐后。', difficulty:1 },
+  { cat:'出国旅行', subcat:'餐厅', word:'beverage', phonetic:'/ˈbevərɪdʒ/', meaning:'n. 饮料', sentence:'What beverages do you have?', zh:'有什么饮料？', context:'比drinks更正式。', difficulty:1 },
+  { cat:'出国旅行', subcat:'餐厅', word:'vegetarian', phonetic:'/ˌvedʒəˈteriən/', meaning:'n./adj. 素食者（的）', sentence:'I\'m vegetarian.', zh:'我是素食者。', context:'饮食限制。', difficulty:1 },
+  { cat:'出国旅行', subcat:'餐厅', word:'allergic', phonetic:'/əˈlɜːrdʒɪk/', meaning:'adj. 过敏的', sentence:'I\'m allergic to peanuts.', zh:'我对花生过敏。', context:'非常重要的一句话。', difficulty:1 },
+
+  // -- 3.6 交通（旅行）--
+  { cat:'出国旅行', subcat:'交通', word:'taxi', phonetic:'/ˈtæksi/', meaning:'n. 出租车', sentence:'Can you call me a taxi?', zh:'能帮我叫辆出租车吗？', context:'打车。', difficulty:1 },
+  { cat:'出国旅行', subcat:'交通', word:'uber', phonetic:'/ˈuːbər/', meaning:'n. 网约车', sentence:'Let\'s take an Uber.', zh:'我们叫Uber吧。', context:'很多国家都用。', difficulty:1 },
+  { cat:'出国旅行', subcat:'交通', word:'rental car', phonetic:'/ˈrentl kɑːr/', meaning:'n. 租车', sentence:'Where can I rent a car?', zh:'哪里可以租车？', context:'自驾游。', difficulty:1 },
+  { cat:'出国旅行', subcat:'交通', word:'express', phonetic:'/ɪkˈspres/', meaning:'n. 快车；特快', sentence:'Is this the express train to downtown?', zh:'这是去市中心的快车吗？', context:'地铁/火车。', difficulty:1 },
+
+  // -- 3.7 购物（旅行）--
+  { cat:'出国旅行', subcat:'购物', word:'bargain', phonetic:'/ˈbɑːrɡɪn/', meaning:'v./n. 讨价还价', sentence:'Can I bargain for a lower price?', zh:'能便宜点吗？', context:'有些地方可以讲价。', difficulty:1 },
+  { cat:'出国旅行', subcat:'购物', word:'import', phonetic:'/ˈɪmpɔːrt/', meaning:'v./n. 进口', sentence:'This product is imported from Japan.', zh:'这个产品是从日本进口的。', context:'购物时了解产地。', difficulty:1 },
+  { cat:'出国旅行', subcat:'购物', word:'export', phonetic:'/ˈekspɔːrt/', meaning:'v./n. 出口', sentence:'China is the largest exporter of electronics.', zh:'中国是最大的电子产品出口国。', context:'外贸基础。', difficulty:1 },
+  { cat:'出国旅行', subcat:'购物', word:'genuine', phonetic:'/ˈdʒenjuɪn/', meaning:'adj. 真正的', sentence:'Is this a genuine product?', zh:'这是正品吗？', context:'买名牌时确认真伪。', difficulty:1 },
+
+  // -- 3.8 文化社交 --
+  { cat:'出国旅行', subcat:'文化社交', word:'customs', phonetic:'/ˈkʌstəmz/', meaning:'n. 风俗', sentence:'We need to respect local customs.', zh:'我们需要尊重当地风俗。', context:'入乡随俗。', difficulty:1 },
+  { cat:'出国旅行', subcat:'文化社交', word:'tradition', phonetic:'/trəˈdɪʃn/', meaning:'n. 传统', sentence:'This is a local tradition.', zh:'这是当地的传统。', context:'了解当地文化。', difficulty:1 },
+  { cat:'出国旅行', subcat:'文化社交', word:'language barrier', phonetic:'/ˈlæŋɡwɪdʒ ˈbæriər/', meaning:'n. 语言障碍', sentence:'The language barrier makes it hard to communicate.', zh:'语言障碍让沟通变得困难。', context:'出国常遇到的问题。', difficulty:2 },
+
+  // =====================================================
+  // 四、职场办公（约45词）
+  // =====================================================
+
+  // -- 4.1 会议沟通 --
+  { cat:'职场办公', subcat:'会议沟通', word:'meeting', phonetic:'/ˈmiːtɪŋ/', meaning:'n. 会议', sentence:'Let\'s schedule a meeting for tomorrow.', zh:'我们安排明天开会吧。', context:'职场最基本活动。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'agenda', phonetic:'/əˈdʒendə/', meaning:'n. 议程', sentence:'What\'s on the agenda today?', zh:'今天的议程是什么？', context:'会议开始前看。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'minutes', phonetic:'/ˈmɪnɪts/', meaning:'n. 会议记录', sentence:'Please send out the meeting minutes.', zh:'请发会议记录。', context:'会后记录。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'action item', phonetic:'/ˈækʃn ˈaɪtəm/', meaning:'n. 行动项', sentence:'What are the action items from this meeting?', zh:'这次会议的行动项是什么？', context:'会后需要做的事。', difficulty:2 },
+  { cat:'职场办公', subcat:'会议沟通', word:'deadline', phonetic:'/ˈdedlaɪn/', meaning:'n. 截止日期', sentence:'The deadline is next Friday.', zh:'截止日期是下周五。', context:'每个项目都有。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'proposal', phonetic:'/prəˈpoʊzl/', meaning:'n. 提案', sentence:'I\'ll prepare a proposal for the new project.', zh:'我会为新项目准备一份提案。', context:'提出方案。', difficulty:2 },
+  { cat:'职场办公', subcat:'会议沟通', word:'presentation', phonetic:'/ˌpreznˈteɪʃn/', meaning:'n. 演示；汇报', sentence:'She gave an excellent presentation.', zh:'她做了一个非常棒的演示。', context:'展示工作成果。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'brainstorm', phonetic:'/ˈbreɪnstɔːrm/', meaning:'v. 头脑风暴', sentence:'Let\'s brainstorm some ideas.', zh:'我们来头脑风暴一下。', context:'团队集思广益。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'feedback', phonetic:'/ˈfiːdbæk/', meaning:'n. 反馈', sentence:'I need your feedback on this document.', zh:'我需要你对这份文件的反馈。', context:'同事间协作。', difficulty:1 },
+  { cat:'职场办公', subcat:'会议沟通', word:'consensus', phonetic:'/kənˈsensəs/', meaning:'n. 共识', sentence:'We need to reach a consensus.', zh:'我们需要达成共识。', context:'团队决策。', difficulty:2 },
+
+  // -- 4.2 邮件沟通（职场）--
+  { cat:'职场办公', subcat:'邮件沟通', word:'attached', phonetic:'/əˈtætʃt/', meaning:'adj. 附件中的', sentence:'Please find the attached document.', zh:'请查收附件中的文件。', context:'邮件标配开头。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'regarding', phonetic:'/rɪˈɡɑːrdɪŋ/', meaning:'prep. 关于', sentence:'Regarding your inquiry, please find details below.', zh:'关于您的咨询，请看以下详情。', context:'邮件主题行或开头。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'follow up', phonetic:'/ˈfɑːloʊ ʌp/', meaning:'v. 跟进', sentence:'I\'m writing to follow up on our previous conversation.', zh:'我写信跟进我们之前的对话。', context:'邮件跟进用语。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'asap', phonetic:'as soon as possible', meaning:'adv. 尽快', sentence:'Please reply as soon as possible.', zh:'请尽快回复。', context:'邮件催促用。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'cc', phonetic:'carbon copy', meaning:'v./n. 抄送', sentence:'Please cc me on that email.', zh:'那封邮件请抄送我。', context:'让其他人也看到。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'approve', phonetic:'/əˈpruːv/', meaning:'v. 批准', sentence:'The manager needs to approve this order.', zh:'经理需要批准这个订单。', context:'审批流程。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'inquiry', phonetic:'/ɪnˈkwaɪri/', meaning:'n. 询问', sentence:'Thank you for your inquiry.', zh:'感谢您的来信询问。', context:'回复客户邮件开头。', difficulty:1 },
+  { cat:'职场办公', subcat:'邮件沟通', word:'confirmation', phonetic:'/ˌkɑːnfərˈmeɪʃn/', meaning:'n. 确认', sentence:'Please send a confirmation reply.', zh:'请发送确认回复。', context:'确认收到或同意。', difficulty:1 },
+
+  // -- 4.3 日常办公 --
+  { cat:'职场办公', subcat:'日常办公', word:'schedule', phonetic:'/ˈskedʒuːl/', meaning:'n. 时间表 v. 安排', sentence:'What\'s your schedule for tomorrow?', zh:'你明天的安排是什么？', context:'美式发音读 sched-ool。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'available', phonetic:'/əˈveɪləbl/', meaning:'adj. 可用的、有空的', sentence:'Is this seat available?', zh:'这个位子有人吗？', context:'万能形容词。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'priority', phonetic:'/praɪˈɔːrəti/', meaning:'n. 优先事项', sentence:'This is our top priority right now.', zh:'这是我们目前的首要任务。', context:'安排工作优先级。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'task', phonetic:'/tæsk/', meaning:'n. 任务', sentence:'I have several tasks to complete today.', zh:'我今天有几个任务要完成。', context:'日常工作分配。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'overtime', phonetic:'/ˈoʊvərtaɪm/', meaning:'n. 加班', sentence:'I have to work overtime tonight.', zh:'我今晚要加班。', context:'加班文化。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'promotion', phonetic:'/prəˈmoʊʃn/', meaning:'n. 升职', sentence:'Congratulations on your promotion!', zh:'恭喜你升职！', context:'职场晋升。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'colleague', phonetic:'/ˈkɑːliːɡ/', meaning:'n. 同事', sentence:'She is my colleague from the sales team.', zh:'她是销售部的同事。', context:'比coworker更正式。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'resume', phonetic:'/rɪˈzuːm/', meaning:'n. 简历', sentence:'Please update your resume.', zh:'请更新你的简历。', context:'求职必备。', difficulty:1 },
+  { cat:'职场办公', subcat:'日常办公', word:'orientation', phonetic:'/ˌɔːriənˈteɪʃn/', meaning:'n. 入职培训', sentence:'New employees have a one-week orientation.', zh:'新员工有一周的入职培训。', context:'入职第一天。', difficulty:2 },
+  { cat:'职场办公', subcat:'日常办公', word:'probation', phonetic:'/proʊˈbeɪʃn/', meaning:'n. 试用期', sentence:'The probation period is three months.', zh:'试用期是三个月。', context:'新工作前几个月。', difficulty:2 },
+
+  // -- 4.4 财务相关 --
+  { cat:'职场办公', subcat:'财务相关', word:'budget', phonetic:'/ˈbʌdʒɪt/', meaning:'n. 预算', sentence:'We need to stay within the budget.', zh:'我们需要控制在预算内。', context:'每个项目都有预算。', difficulty:1 },
+  { cat:'职场办公', subcat:'财务相关', word:'invoice', phonetic:'/ˈɪnvɔɪs/', meaning:'n. 发票', sentence:'Please send the invoice to accounting.', zh:'请把发票发给财务部。', context:'付款凭证。', difficulty:1 },
+  { cat:'职场办公', subcat:'财务相关', word:'revenue', phonetic:'/ˈrevənuː/', meaning:'n. 收入', sentence:'Our revenue grew by 20% this quarter.', zh:'我们这季度收入增长了20%。', context:'公司营收。', difficulty:2 },
+  { cat:'职场办公', subcat:'财务相关', word:'expense', phonetic:'/ɪkˈspens/', meaning:'n. 费用', sentence:'Please submit your expense report.', zh:'请提交你的费用报告。', context:'报销用。', difficulty:1 },
+  { cat:'职场办公', subcat:'财务相关', word:'reimburse', phonetic:'/ˌriːɪmˈbɜːrs/', meaning:'v. 报销', sentence:'The company will reimburse your travel expenses.', zh:'公司会报销你的差旅费。', context:'出差后报销。', difficulty:2 },
+  { cat:'职场办公', subcat:'财务相关', word:'payment', phonetic:'/ˈpeɪmənt/', meaning:'n. 付款', sentence:'When is the payment due?', zh:'付款什么时候到期？', context:'商务交易核心。', difficulty:1 },
+  { cat:'职场办公', subcat:'财务相关', word:'transaction', phonetic:'/trænˈzækʃn/', meaning:'n. 交易', sentence:'Please record this transaction.', zh:'请记录这笔交易。', context:'财务记录。', difficulty:2 },
+  { cat:'职场办公', subcat:'财务相关', word:'receipt', phonetic:'/rɪˈsiːt/', meaning:'n. 收据', sentence:'Please keep the receipt for your records.', zh:'请保留收据以备记录。', context:'报销凭证。', difficulty:1 },
+
+  // -- 4.5 团队协作 --
+  { cat:'职场办公', subcat:'团队协作', word:'collaborate', phonetic:'/kəˈlæbəreɪt/', meaning:'v. 合作', sentence:'We need to collaborate on this project.', zh:'我们需要在这个项目上合作。', context:'团队合作。', difficulty:2 },
+  { cat:'职场办公', subcat:'团队协作', word:'delegate', phonetic:'/ˈdelɪɡeɪt/', meaning:'v. 委派', sentence:'You should delegate some tasks to your team.', zh:'你应该把一些任务委派给团队。', context:'管理技能。', difficulty:2 },
+  { cat:'职场办公', subcat:'团队协作', word:'supervisor', phonetic:'/ˈsuːpərvaɪzər/', meaning:'n. 主管', sentence:'Please check with your supervisor.', zh:'请和你的主管确认。', context:'汇报对象。', difficulty:1 },
+  { cat:'职场办公', subcat:'团队协作', word:'teamwork', phonetic:'/ˈtiːmwɜːrk/', meaning:'n. 团队合作', sentence:'Good teamwork is essential for success.', zh:'良好的团队合作是成功的关键。', context:'职场价值观。', difficulty:1 },
+  { cat:'职场办公', subcat:'团队协作', word:'initiative', phonetic:'/ɪˈnɪʃətɪv/', meaning:'n. 主动性；倡议', sentence:'She took the initiative to organize the event.', zh:'她主动组织了这次活动。', context:'职场表现。', difficulty:2 },
+  { cat:'职场办公', subcat:'团队协作', word:'responsibility', phonetic:'/rɪˌspɑːnsəˈbɪləti/', meaning:'n. 责任', sentence:'It\'s your responsibility to finish this report.', zh:'完成这份报告是你的责任。', context:'工作职责。', difficulty:1 },
+
+  // -- 4.6 项目管理 --
+  { cat:'职场办公', subcat:'项目管理', word:'milestone', phonetic:'/ˈmaɪlstoʊn/', meaning:'n. 里程碑', sentence:'We\'ve reached an important milestone.', zh:'我们到达了一个重要的里程碑。', context:'项目进度。', difficulty:2 },
+  { cat:'职场办公', subcat:'项目管理', word:'scope', phonetic:'/skoʊp/', meaning:'n. 范围', sentence:'The scope of this project is quite large.', zh:'这个项目的范围很大。', context:'项目边界。', difficulty:2 },
+  { cat:'职场办公', subcat:'项目管理', word:'stakeholder', phonetic:'/ˈsteɪkhoʊldər/', meaning:'n. 利益相关者', sentence:'We need to update all stakeholders.', zh:'我们需要通知所有利益相关者。', context:'项目相关方。', difficulty:2 },
+  { cat:'职场办公', subcat:'项目管理', word:'deliverable', phonetic:'/dɪˈlɪvərəbl/', meaning:'n. 交付物', sentence:'The first deliverable is due next week.', zh:'第一个交付物下周到期。', context:'项目产出。', difficulty:2 },
+
+  // -- 4.7 人力资源 --
+  { cat:'职场办公', subcat:'人力资源', word:'recruit', phonetic:'/rɪˈkruːt/', meaning:'v. 招聘', sentence:'We are recruiting new sales staff.', zh:'我们正在招聘新的销售人员。', context:'招聘。', difficulty:1 },
+  { cat:'职场办公', subcat:'人力资源', word:'interview', phonetic:'/ˈɪntərvjuː/', meaning:'n./v. 面试', sentence:'I have an interview tomorrow morning.', zh:'我明天上午有面试。', context:'求职流程。', difficulty:1 },
+  { cat:'职场办公', subcat:'人力资源', word:'salary', phonetic:'/ˈsæləri/', meaning:'n. 薪水', sentence:'What is the expected salary range?', zh:'期望的薪资范围是多少？', context:'谈薪资。', difficulty:1 },
+  { cat:'职场办公', subcat:'人力资源', word:'benefits', phonetic:'/ˈbenɪfits/', meaning:'n. 福利', sentence:'The benefits package includes health insurance.', zh:'福利包括医疗保险。', context:'五险一金等。', difficulty:1 },
+  { cat:'职场办公', subcat:'人力资源', word:'performance', phonetic:'/pərˈfɔːrməns/', meaning:'n. 绩效', sentence:'Your performance review is next week.', zh:'你的绩效考核在下周。', context:'职场评估。', difficulty:1 },
+  { cat:'职场办公', subcat:'人力资源', word:'appraisal', phonetic:'/əˈpreɪzl/', meaning:'n. 评估', sentence:'The annual appraisal determines your bonus.', zh:'年度评估决定你的奖金。', context:'年终考核。', difficulty:2 },
+
+  // =====================================================
+  // 五、高频核心词汇（生活/职场通用，约280词）
+  // =====================================================
+
+  // -- 5.1 动词高频 --
+  { cat:'核心词汇', subcat:'动词', word:'accept', phonetic:'/əkˈsept/', meaning:'v. 接受', sentence:'I accept your offer.', zh:'我接受你的报价。', context:'日常和商务都常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'achieve', phonetic:'/əˈtʃiːv/', meaning:'v. 实现；达到', sentence:'We achieved our sales target.', zh:'我们完成了销售目标。', context:'职场表达。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'adjust', phonetic:'/əˈdʒʌst/', meaning:'v. 调整', sentence:'We need to adjust the schedule.', zh:'我们需要调整时间表。', context:'灵活应变。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'agree', phonetic:'/əˈɡriː/', meaning:'v. 同意', sentence:'I agree with your suggestion.', zh:'我同意你的建议。', context:'表达共识。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'allow', phonetic:'/əˈlaʊ/', meaning:'v. 允许', sentence:'Smoking is not allowed here.', zh:'这里不允许吸烟。', context:'规则说明。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'announce', phonetic:'/əˈnaʊns/', meaning:'v. 宣布', sentence:'The results will be announced tomorrow.', zh:'结果明天公布。', context:'正式通知。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'apply', phonetic:'/əˈplaɪ/', meaning:'v. 申请；应用', sentence:'You can apply for this position.', zh:'你可以申请这个职位。', context:'求职或规则适用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'arrange', phonetic:'/əˈreɪndʒ/', meaning:'v. 安排', sentence:'I\'ll arrange a meeting for next week.', zh:'我会安排下周的会议。', context:'工作安排。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'assist', phonetic:'/əˈsɪst/', meaning:'v. 协助', sentence:'How can I assist you?', zh:'我能怎么帮你？', context:'服务行业常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'assume', phonetic:'/əˈsuːm/', meaning:'v. 假设', sentence:'I assume you\'ve read the report.', zh:'我假设你已经看了报告。', context:'表达推测。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'attach', phonetic:'/əˈtætʃ/', meaning:'v. 附上', sentence:'I\'ve attached the document to this email.', zh:'我把文件附在这封邮件里了。', context:'邮件必备。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'avoid', phonetic:'/əˈvɔɪd/', meaning:'v. 避免', sentence:'We should avoid making the same mistake.', zh:'我们应该避免犯同样的错误。', context:'经验总结。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'believe', phonetic:'/bɪˈliːv/', meaning:'v. 相信', sentence:'I believe we can do it.', zh:'我相信我们能做到。', context:'表达信心。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'cancel', phonetic:'/ˈkænsəl/', meaning:'v. 取消', sentence:'We need to cancel the order.', zh:'我们需要取消订单。', context:'商务场景。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'compare', phonetic:'/kəmˈper/', meaning:'v. 比较', sentence:'Let\'s compare the two options.', zh:'我们来比较一下两个选项。', context:'做决策时。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'complete', phonetic:'/kəmˈpliːt/', meaning:'v. 完成', sentence:'Please complete the form.', zh:'请填写表格。', context:'任务完成。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'confirm', phonetic:'/kənˈfɜːrm/', meaning:'v. 确认', sentence:'Please confirm your attendance.', zh:'请确认你是否出席。', context:'邮件和会议常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'consider', phonetic:'/kənˈsɪdər/', meaning:'v. 考虑', sentence:'Please consider our proposal.', zh:'请考虑我们的提案。', context:'商务沟通。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'contact', phonetic:'/ˈkɑːntækt/', meaning:'v. 联系', sentence:'Please contact me if you have questions.', zh:'有问题请联系我。', context:'邮件结尾常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'create', phonetic:'/kriˈeɪt/', meaning:'v. 创造', sentence:'We need to create a new plan.', zh:'我们需要制定一个新计划。', context:'创新和规划。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'decide', phonetic:'/dɪˈsaɪd/', meaning:'v. 决定', sentence:'Have you decided yet?', zh:'你决定了吗？', context:'决策。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'describe', phonetic:'/dɪˈskraɪb/', meaning:'v. 描述', sentence:'Can you describe the problem?', zh:'你能描述一下问题吗？', context:'沟通细节。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'develop', phonetic:'/dɪˈveləp/', meaning:'v. 发展', sentence:'We are developing a new product.', zh:'我们正在开发新产品。', context:'业务拓展。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'discuss', phonetic:'/dɪˈskʌs/', meaning:'v. 讨论', sentence:'Let\'s discuss this in the meeting.', zh:'我们开会讨论吧。', context:'团队沟通。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'encourage', phonetic:'/ɪnˈkɜːrɪdʒ/', meaning:'v. 鼓励', sentence:'I encourage you to try again.', zh:'我鼓励你再试一次。', context:'激励他人。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'ensure', phonetic:'/ɪnˈʃʊr/', meaning:'v. 确保', sentence:'Please ensure all documents are ready.', zh:'请确保所有文件都准备好了。', context:'工作要求。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'establish', phonetic:'/ɪˈstæblɪʃ/', meaning:'v. 建立', sentence:'We established a partnership last year.', zh:'我们去年建立了合作关系。', context:'商业关系。', difficulty:2 },
+  { cat:'核心词汇', subcat:'动词', word:'evaluate', phonetic:'/ɪˈvæljueɪt/', meaning:'v. 评估', sentence:'We need to evaluate the results.', zh:'我们需要评估结果。', context:'数据分析。', difficulty:2 },
+  { cat:'核心词汇', subcat:'动词', word:'examine', phonetic:'/ɪɡˈzæmɪn/', meaning:'v. 检查', sentence:'Please examine the product carefully.', zh:'请仔细检查产品。', context:'质量检查。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'explain', phonetic:'/ɪkˈspleɪn/', meaning:'v. 解释', sentence:'Can you explain this process?', zh:'你能解释一下这个流程吗？', context:'学习和沟通。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'express', phonetic:'/ɪkˈspres/', meaning:'v. 表达', sentence:'I want to express my gratitude.', zh:'我想表达我的感谢。', context:'正式表达。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'focus', phonetic:'/ˈfoʊkəs/', meaning:'v. 集中', sentence:'Let\'s focus on the key issues.', zh:'我们来聚焦关键问题。', context:'会议引导。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'guarantee', phonetic:'/ˌɡærənˈtiː/', meaning:'v. 保证', sentence:'We guarantee the quality.', zh:'我们保证质量。', context:'承诺。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'handle', phonetic:'/ˈhændl/', meaning:'v. 处理', sentence:'I\'ll handle this situation.', zh:'我来处理这个情况。', context:'承担责任。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'ignore', phonetic:'/ɪɡˈnɔːr/', meaning:'v. 忽视', sentence:'Don\'t ignore the warning signs.', zh:'不要忽视警告信号。', context:'提醒注意。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'improve', phonetic:'/ɪmˈpruːv/', meaning:'v. 改善', sentence:'We need to improve our service.', zh:'我们需要改善服务。', context:'持续改进。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'include', phonetic:'/ɪnˈkluːd/', meaning:'v. 包括', sentence:'The price includes tax.', zh:'价格包含税。', context:'说明范围。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'inform', phonetic:'/ɪnˈfɔːrm/', meaning:'v. 通知', sentence:'Please inform us of any changes.', zh:'请通知我们任何变动。', context:'信息传递。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'insist', phonetic:'/ɪnˈsɪst/', meaning:'v. 坚持', sentence:'I insist on getting a refund.', zh:'我坚持要求退款。', context:'表达立场。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'invest', phonetic:'/ɪnˈvest/', meaning:'v. 投资', sentence:'We should invest in new technology.', zh:'我们应该投资新技术。', context:'商业决策。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'involve', phonetic:'/ɪnˈvɑːlv/', meaning:'v. 涉及', sentence:'This project involves many departments.', zh:'这个项目涉及很多部门。', context:'项目范围。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'manage', phonetic:'/ˈmænɪdʒ/', meaning:'v. 管理', sentence:'She manages a team of 20 people.', zh:'她管理一个20人的团队。', context:'管理能力。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'mention', phonetic:'/ˈmenʃn/', meaning:'v. 提到', sentence:'He mentioned the problem in the meeting.', zh:'他在会议上提到了这个问题。', context:'信息传递。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'obtain', phonetic:'/əbˈteɪn/', meaning:'v. 获得', sentence:'You need to obtain a visa first.', zh:'你需要先获得签证。', context:'获取许可。', difficulty:2 },
+  { cat:'核心词汇', subcat:'动词', word:'operate', phonetic:'/ˈɑːpəreɪt/', meaning:'v. 操作', sentence:'Do you know how to operate this machine?', zh:'你知道怎么操作这台机器吗？', context:'设备使用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'organize', phonetic:'/ˈɔːrɡənaɪz/', meaning:'v. 组织', sentence:'We organized a company event.', zh:'我们组织了一次公司活动。', context:'活动安排。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'participate', phonetic:'/pɑːrˈtɪsɪpeɪt/', meaning:'v. 参与', sentence:'Everyone should participate in the training.', zh:'每个人都应该参加培训。', context:'团队活动。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'persuade', phonetic:'/pərˈsweɪd/', meaning:'v. 说服', sentence:'I tried to persuade him to change his mind.', zh:'我试图说服他改变主意。', context:'沟通技巧。', difficulty:2 },
+  { cat:'核心词汇', subcat:'动词', word:'prepare', phonetic:'/prɪˈper/', meaning:'v. 准备', sentence:'Please prepare the report for tomorrow.', zh:'请准备明天的报告。', context:'工作准备。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'prevent', phonetic:'/prɪˈvent/', meaning:'v. 防止', sentence:'We need to prevent this from happening again.', zh:'我们需要防止这种情况再次发生。', context:'风险管理。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'provide', phonetic:'/prəˈvaɪd/', meaning:'v. 提供', sentence:'We provide excellent customer service.', zh:'我们提供优质的客户服务。', context:'服务承诺。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'recommend', phonetic:'/ˌrekəˈmend/', meaning:'v. 推荐', sentence:'I recommend this product.', zh:'我推荐这个产品。', context:'建议和推荐。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'reduce', phonetic:'/rɪˈduːs/', meaning:'v. 减少', sentence:'We need to reduce costs.', zh:'我们需要降低成本。', context:'效率优化。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'reject', phonetic:'/rɪˈdʒekt/', meaning:'v. 拒绝', sentence:'They rejected our proposal.', zh:'他们拒绝了我们的提案。', context:'商务谈判。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'release', phonetic:'/rɪˈliːs/', meaning:'v. 发布；释放', sentence:'We will release the new version next week.', zh:'我们下周发布新版本。', context:'产品发布。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'remind', phonetic:'/rɪˈmaɪnd/', meaning:'v. 提醒', sentence:'Please remind me about the meeting.', zh:'请提醒我开会的事。', context:'工作提醒。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'remove', phonetic:'/rɪˈmuːv/', meaning:'v. 移除', sentence:'Please remove the old files.', zh:'请删除旧文件。', context:'清理工作。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'require', phonetic:'/rɪˈkwaɪər/', meaning:'v. 需要', sentence:'This job requires 3 years of experience.', zh:'这个职位需要3年经验。', context:'职位要求。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'research', phonetic:'/rɪˈsɜːrtʃ/', meaning:'v./n. 研究', sentence:'We need to research the market.', zh:'我们需要研究市场。', context:'市场分析。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'respond', phonetic:'/rɪˈspɑːnd/', meaning:'v. 回应', sentence:'Please respond as soon as possible.', zh:'请尽快回复。', context:'邮件催促。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'review', phonetic:'/rɪˈvjuː/', meaning:'v./n. 审查', sentence:'Please review the document.', zh:'请审查这份文件。', context:'工作审核。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'solve', phonetic:'/sɑːlv/', meaning:'v. 解决', sentence:'We need to solve this problem.', zh:'我们需要解决这个问题。', context:'问题处理。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'suggest', phonetic:'/səˈdʒest/', meaning:'v. 建议', sentence:'I suggest we try a different approach.', zh:'我建议我们尝试不同的方法。', context:'提出建议。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'supply', phonetic:'/səˈplaɪ/', meaning:'v. 供应', sentence:'We supply products to over 50 countries.', zh:'我们向50多个国家供应产品。', context:'业务范围。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'support', phonetic:'/səˈpɔːrt/', meaning:'v. 支持', sentence:'We support our clients 24/7.', zh:'我们全天候支持客户。', context:'服务承诺。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'transfer', phonetic:'/trænsˈfɜːr/', meaning:'v. 转移', sentence:'Please transfer the funds to our account.', zh:'请把资金转到我们账户。', context:'金融交易。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'treat', phonetic:'/triːt/', meaning:'v. 对待；请客', sentence:'Treat others as you want to be treated.', zh:'你希望别人怎么对待你，就怎么对待别人。', context:'金科玉律。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'trust', phonetic:'/trʌst/', meaning:'v./n. 信任', sentence:'I trust your judgment.', zh:'我相信你的判断。', context:'建立信任。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'understand', phonetic:'/ˌʌndərˈstænd/', meaning:'v. 理解', sentence:'I understand your concern.', zh:'我理解你的担忧。', context:'表达同理心。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'value', phonetic:'/ˈvæljuː/', meaning:'v. 重视', sentence:'We value your feedback.', zh:'我们重视您的反馈。', context:'客户关系。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'warn', phonetic:'/wɔːrn/', meaning:'v. 警告', sentence:'I warned him about the risks.', zh:'我警告过他风险。', context:'风险提示。', difficulty:1 },
+  { cat:'核心词汇', subcat:'动词', word:'wish', phonetic:'/wɪʃ/', meaning:'v. 希望', sentence:'I wish you success.', zh:'祝你成功。', context:'祝福语。', difficulty:1 },
+
+  // -- 5.2 形容词高频 --
+  { cat:'核心词汇', subcat:'形容词', word:'accurate', phonetic:'/ˈækjərət/', meaning:'adj. 准确的', sentence:'Please ensure the data is accurate.', zh:'请确保数据准确。', context:'工作要求。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'adequate', phonetic:'/ˈædɪkwət/', meaning:'adj. 足够的', sentence:'The resources are adequate for the project.', zh:'资源足够这个项目使用。', context:'资源评估。', difficulty:2 },
+  { cat:'核心词汇', subcat:'形容词', word:'appropriate', phonetic:'/əˈproʊpriət/', meaning:'adj. 适当的', sentence:'Is this the appropriate time to call?', zh:'现在打电话合适吗？', context:'时机判断。', difficulty:2 },
+  { cat:'核心词汇', subcat:'形容词', word:'aware', phonetic:'/əˈwer/', meaning:'adj. 意识到的', sentence:'Are you aware of the changes?', zh:'你知道这些变动吗？', context:'信息同步。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'capable', phonetic:'/ˈkeɪpəbl/', meaning:'adj. 有能力的', sentence:'She is capable of handling this task.', zh:'她有能力处理这个任务。', context:'能力评估。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'comfortable', phonetic:'/ˈkʌmftəbl/', meaning:'adj. 舒适的', sentence:'The hotel room is very comfortable.', zh:'酒店房间很舒适。', context:'体验评价。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'convenient', phonetic:'/kənˈviːniənt/', meaning:'adj. 方便的', sentence:'Is this time convenient for you?', zh:'这个时间方便吗？', context:'安排时间。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'efficient', phonetic:'/ɪˈfɪʃnt/', meaning:'adj. 高效的', sentence:'We need a more efficient process.', zh:'我们需要更高效的流程。', context:'效率优化。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'essential', phonetic:'/ɪˈsenʃl/', meaning:'adj. 必要的', sentence:'Communication is essential.', zh:'沟通是必要的。', context:'重要性强调。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'obvious', phonetic:'/ˈɑːbviəs/', meaning:'adj. 明显的', sentence:'The answer is obvious.', zh:'答案很明显。', context:'强调显而易见。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'perfect', phonetic:'/ˈpɜːrfɪkt/', meaning:'adj. 完美的', sentence:'This is perfect!', zh:'这太完美了！', context:'高度评价。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'permanent', phonetic:'/ˈpɜːrmənənt/', meaning:'adj. 永久的', sentence:'Is this a permanent position?', zh:'这是永久职位吗？', context:'工作性质。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'possible', phonetic:'/ˈpɑːsəbl/', meaning:'adj. 可能的', sentence:'Is it possible to change the date?', zh:'能改日期吗？', context:'询问可行性。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'professional', phonetic:'/prəˈfeʃənl/', meaning:'adj. 专业的', sentence:'She is very professional.', zh:'她很专业。', context:'职业素养。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'prompt', phonetic:'/prɑːmpt/', meaning:'adj. 及时的', sentence:'Thank you for your prompt reply.', zh:'感谢您的及时回复。', context:'邮件常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'reliable', phonetic:'/rɪˈlaɪəbl/', meaning:'adj. 可靠的', sentence:'We need a reliable supplier.', zh:'我们需要可靠的供应商。', context:'供应商评估。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'responsible', phonetic:'/rɪˈspɑːnsəbl/', meaning:'adj. 负责的', sentence:'Who is responsible for this?', zh:'谁负责这个？', context:'责任归属。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'significant', phonetic:'/sɪɡˈnɪfɪkənt/', meaning:'adj. 重要的', sentence:'This is a significant achievement.', zh:'这是一个重要的成就。', context:'强调重要性。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'temporary', phonetic:'/ˈtempəreri/', meaning:'adj. 临时的', sentence:'This is a temporary solution.', zh:'这是一个临时解决方案。', context:'过渡安排。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'urgent', phonetic:'/ˈɜːrdʒənt/', meaning:'adj. 紧急的', sentence:'This is an urgent matter.', zh:'这是紧急事务。', context:'优先级说明。', difficulty:1 },
+  { cat:'核心词汇', subcat:'形容词', word:'valuable', phonetic:'/ˈvæljuəbl/', meaning:'adj. 有价值的', sentence:'Your feedback is valuable.', zh:'你的反馈很有价值。', context:'肯定他人。', difficulty:1 },
+
+  // -- 5.3 副词高频 --
+  { cat:'核心词汇', subcat:'副词', word:'absolutely', phonetic:'/ˈæbsəluːtli/', meaning:'adv. 绝对地', sentence:'I absolutely agree.', zh:'我完全同意。', context:'强烈肯定。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'actually', phonetic:'/ˈæktʃuəli/', meaning:'adv. 实际上', sentence:'Actually, I think you\'re right.', zh:'实际上，我觉得你是对的。', context:'转折或确认。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'basically', phonetic:'/ˈbeɪsɪkli/', meaning:'adv. 基本上', sentence:'Basically, we agree on everything.', zh:'基本上，我们都同意。', context:'总结要点。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'certainly', phonetic:'/ˈsɜːrtnli/', meaning:'adv. 当然', sentence:'I will certainly do that.', zh:'我当然会做。', context:'肯定答复。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'clearly', phonetic:'/ˈklɪrli/', meaning:'adv. 清楚地', sentence:'Please speak more clearly.', zh:'请说得更清楚一些。', context:'沟通改进。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'currently', phonetic:'/ˈkɜːrəntli/', meaning:'adv. 目前', sentence:'We are currently working on this.', zh:'我们目前正在做这个。', context:'进度说明。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'definitely', phonetic:'/ˈdefɪnətli/', meaning:'adv. 肯定地', sentence:'I will definitely attend.', zh:'我肯定会参加。', context:'确认出席。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'especially', phonetic:'/ɪˈspeʃəli/', meaning:'adv. 尤其', sentence:'This is especially important.', zh:'这尤其重要。', context:'强调重点。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'eventually', phonetic:'/ɪˈventʃuəli/', meaning:'adv. 最终', sentence:'We will eventually succeed.', zh:'我们最终会成功。', context:'表达信心。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'immediately', phonetic:'/ɪˈmiːdiətli/', meaning:'adv. 立即', sentence:'Please respond immediately.', zh:'请立即回复。', context:'紧急要求。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'naturally', phonetic:'/ˈnætʃrəli/', meaning:'adv. 自然地', sentence:'Naturally, we want the best for our clients.', zh:'自然地，我们想给客户最好的。', context:'理所当然。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'obviously', phonetic:'/ˈɑːbviəsli/', meaning:'adv. 显然', sentence:'Obviously, we need to improve.', zh:'显然，我们需要改进。', context:'强调显而易见。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'particularly', phonetic:'/pərˈtɪkjələrli/', meaning:'adv. 特别地', sentence:'This is particularly important.', zh:'这特别重要。', context:'强调重点。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'perfectly', phonetic:'/ˈpɜːrfɪktli/', meaning:'adv. 完美地', sentence:'That works perfectly.', zh:'那完全可行。', context:'高度认可。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'previously', phonetic:'/ˈpriːviəsli/', meaning:'adv. 之前', sentence:'As previously mentioned.', zh:'如之前所述。', context:'邮件和报告常用。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'probably', phonetic:'/ˈprɑːbəbli/', meaning:'adv. 可能', sentence:'I\'ll probably be late.', zh:'我可能会迟到。', context:'表达不确定性。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'recently', phonetic:'/ˈriːsntli/', meaning:'adv. 最近', sentence:'We recently launched a new product.', zh:'我们最近发布了新产品。', context:'时间说明。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'regularly', phonetic:'/ˈreɡjələrli/', meaning:'adv. 定期地', sentence:'We check quality regularly.', zh:'我们定期检查质量。', context:'工作习惯。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'seriously', phonetic:'/ˈsɪriəsli/', meaning:'adv. 严肃地', sentence:'We take this matter seriously.', zh:'我们严肃对待这件事。', context:'态度说明。', difficulty:1 },
+  { cat:'核心词汇', subcat:'副词', word:'successfully', phonetic:'/səkˈsesfəli/', meaning:'adv. 成功地', sentence:'We successfully completed the project.', zh:'我们成功完成了项目。', context:'成果汇报。', difficulty:1 },
+
+  // -- 5.4 名词高频 --
+  { cat:'核心词汇', subcat:'名词', word:'advantage', phonetic:'/ədˈvæntɪdʒ/', meaning:'n. 优势', sentence:'What are the advantages of this product?', zh:'这个产品的优势是什么？', context:'销售卖点。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'advice', phonetic:'/ədˈvaɪs/', meaning:'n. 建议', sentence:'Thank you for your advice.', zh:'谢谢你的建议。', context:'接受建议。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'agreement', phonetic:'/əˈɡriːmənt/', meaning:'n. 协议', sentence:'We reached an agreement.', zh:'我们达成了协议。', context:'商务谈判。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'attention', phonetic:'/əˈtenʃn/', meaning:'n. 注意', sentence:'Please pay attention to the details.', zh:'请注意细节。', context:'强调重点。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'challenge', phonetic:'/ˈtʃælɪndʒ/', meaning:'n. 挑战', sentence:'This is a big challenge.', zh:'这是一个很大的挑战。', context:'描述困难。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'chance', phonetic:'/tʃæns/', meaning:'n. 机会', sentence:'This is a great chance.', zh:'这是一个很好的机会。', context:'把握机会。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'communication', phonetic:'/kəˌmjuːnɪˈkeɪʃn/', meaning:'n. 沟通', sentence:'Good communication is key.', zh:'良好的沟通是关键。', context:'团队协作。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'conclusion', phonetic:'/kənˈkluːʒn/', meaning:'n. 结论', sentence:'In conclusion, we need to act now.', zh:'总之，我们现在需要行动。', context:'总结陈词。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'confidence', phonetic:'/ˈkɑːnfɪdəns/', meaning:'n. 信心', sentence:'I have confidence in you.', zh:'我对你有信心。', context:'鼓励他人。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'decision', phonetic:'/dɪˈsɪʒn/', meaning:'n. 决定', sentence:'This is a difficult decision.', zh:'这是一个艰难的决定。', context:'重大决策。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'demand', phonetic:'/dɪˈmænd/', meaning:'n. 需求', sentence:'There is high demand for this product.', zh:'这个产品需求很高。', context:'市场分析。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'development', phonetic:'/dɪˈveləpmənt/', meaning:'n. 发展', sentence:'This is an exciting development.', zh:'这是一个令人兴奋的发展。', context:'业务进展。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'discussion', phonetic:'/dɪˈskʌʃn/', meaning:'n. 讨论', sentence:'Let\'s have a discussion.', zh:'我们来讨论一下。', context:'团队沟通。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'experience', phonetic:'/ɪkˈspɪriəns/', meaning:'n. 经验', sentence:'Do you have relevant experience?', zh:'你有相关经验吗？', context:'面试问题。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'goal', phonetic:'/ɡoʊl/', meaning:'n. 目标', sentence:'Our goal is to improve customer satisfaction.', zh:'我们的目标是提高客户满意度。', context:'目标设定。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'growth', phonetic:'/ɡroʊθ/', meaning:'n. 增长', sentence:'The company shows steady growth.', zh:'公司显示出稳定增长。', context:'业务表现。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'improvement', phonetic:'/ɪmˈpruːvmənt/', meaning:'n. 改善', sentence:'We need to see improvement.', zh:'我们需要看到改善。', context:'工作要求。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'influence', phonetic:'/ˈɪnfluəns/', meaning:'n./v. 影响', sentence:'She has great influence.', zh:'她有很大的影响力。', context:'权力和影响。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'interest', phonetic:'/ˈɪntrəst/', meaning:'n. 兴趣；利息', sentence:'We have a strong interest in this product.', zh:'我们对这个产品很感兴趣。', context:'表达兴趣。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'investment', phonetic:'/ɪnˈvestmənt/', meaning:'n. 投资', sentence:'This is a good investment.', zh:'这是一笔好投资。', context:'商业决策。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'knowledge', phonetic:'/ˈnɑːlɪdʒ/', meaning:'n. 知识', sentence:'Knowledge is power.', zh:'知识就是力量。', context:'谚语。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'opportunity', phonetic:'/ˌɑːpərˈtuːnəti/', meaning:'n. 机会', sentence:'This is a great opportunity.', zh:'这是一个很好的机会。', context:'把握商机。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'permission', phonetic:'/pərˈmɪʃn/', meaning:'n. 许可', sentence:'Do I have your permission?', zh:'你允许吗？', context:'请求许可。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'plan', phonetic:'/plæn/', meaning:'n. 计划', sentence:'What\'s your plan?', zh:'你的计划是什么？', context:'规划讨论。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'position', phonetic:'/pəˈzɪʃn/', meaning:'n. 职位', sentence:'She got a new position.', zh:'她得到了一个新职位。', context:'职业发展。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'problem', phonetic:'/ˈprɑːbləm/', meaning:'n. 问题', sentence:'What\'s the problem?', zh:'问题是什么？', context:'识别问题。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'process', phonetic:'/ˈprɑːses/', meaning:'n. 流程', sentence:'We need to improve the process.', zh:'我们需要改进流程。', context:'效率优化。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'progress', phonetic:'/ˈprɑːɡres/', meaning:'n. 进步', sentence:'We made good progress.', zh:'我们取得了很好的进展。', context:'汇报进度。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'quality', phonetic:'/ˈkwɑːləti/', meaning:'n. 质量', sentence:'Quality is our priority.', zh:'质量是我们的首要任务。', context:'品质承诺。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'result', phonetic:'/rɪˈzʌlt/', meaning:'n. 结果', sentence:'The results are positive.', zh:'结果是积极的。', context:'汇报成果。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'risk', phonetic:'/rɪsk/', meaning:'n. 风险', sentence:'There is a risk involved.', zh:'存在风险。', context:'风险评估。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'solution', phonetic:'/səˈluːʃn/', meaning:'n. 解决方案', sentence:'We found a solution.', zh:'我们找到了解决方案。', context:'问题解决。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'success', phonetic:'/səkˈses/', meaning:'n. 成功', sentence:'Wishing you success.', zh:'祝你成功。', context:'祝福语。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'support', phonetic:'/səˈpɔːrt/', meaning:'n. 支持', sentence:'Thank you for your support.', zh:'感谢你的支持。', context:'表达感谢。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'system', phonetic:'/ˈsɪstəm/', meaning:'n. 系统', sentence:'We need a better system.', zh:'我们需要一个更好的系统。', context:'流程改进。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'technology', phonetic:'/tekˈnɑːlədʒi/', meaning:'n. 技术', sentence:'Technology is advancing rapidly.', zh:'技术在快速发展。', context:'行业趋势。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'strategy', phonetic:'/ˈstrætədʒi/', meaning:'n. 策略', sentence:'What is your marketing strategy?', zh:'你的营销策略是什么？', context:'商业规划。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'target', phonetic:'/ˈtɑːrɡɪt/', meaning:'n. 目标', sentence:'We need to hit the target.', zh:'我们需要完成目标。', context:'业绩目标。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'value', phonetic:'/ˈvæljuː/', meaning:'n. 价值', sentence:'This product has great value.', zh:'这个产品很有价值。', context:'性价比。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'vision', phonetic:'/ˈvɪʒn/', meaning:'n. 愿景', sentence:'Our vision is to be the best.', zh:'我们的愿景是成为最好的。', context:'企业愿景。', difficulty:1 },
+  { cat:'核心词汇', subcat:'名词', word:'workforce', phonetic:'/ˈwɜːrkfɔːrs/', meaning:'n. 劳动力', sentence:'We have a skilled workforce.', zh:'我们有熟练的劳动力。', context:'人力资源。', difficulty:2 },
+];
+
+const scenesDB = [
+  {
+    name:'餐厅点餐',
+    icon:'🍽️',
+    lines:[
+      { who:'server', text:'Good evening. Are you ready to order?' },
+      { who:'hint', text:'试着点一份牛排和一杯橙汁' },
+    ],
+    keyPhrases:['I\'d like...', 'Can I have...', 'I\'ll have the...', 'Could I get...']
+  },
+  {
+    name:'问路',
+    icon:'🗺️',
+    lines:[
+      { who:'stranger', text:'You look a bit lost. Can I help you?' },
+      { who:'hint', text:'试着问去最近的地铁站怎么走' },
+    ],
+    keyPhrases:['How do I get to...', 'Where is the nearest...', 'Is it far from here?', 'Can you show me on the map?']
+  },
+  {
+    name:'酒店入住',
+    icon:'🏨',
+    lines:[
+      { who:'receptionist', text:'Good afternoon. Welcome to the Grand Hotel. How may I help you?' },
+      { who:'hint', text:'你有预订，名字是Kim，想要一个能看到海景的房间' },
+    ],
+    keyPhrases:['I have a reservation...', 'I\'d like to check in...', 'Could I get a room with...', 'What time is checkout?']
+  },
+  {
+    name:'购物',
+    icon:'🛍️',
+    lines:[
+      { who:'shopkeeper', text:'Hi! Let me know if you need any help.' },
+      { who:'hint', text:'你在找一件红色的连衣裙，问有没有M码' },
+    ],
+    keyPhrases:['Do you have this in...', 'How much is this?', 'Can I try this on?', 'Do you accept credit cards?']
+  },
+  {
+    name:'展会搭讪',
+    icon:'🤝',
+    lines:[
+      { who:'client', text:'Hi, do you make water bottles?' },
+      { who:'hint', text:'确认你是做水杯的，介绍产品特点，问对方需求' },
+    ],
+    keyPhrases:['Yes, we specialize in...', 'We offer...', 'Our best seller is...', 'What quantity are you looking for?']
+  },
+  {
+    name:'电话跟进',
+    icon:'📞',
+    lines:[
+      { who:'client', text:'Hello, this is Thomas from Germany.' },
+      { who:'hint', text:'你是上次发报价的业务员，跟进对方看了报价没有' },
+    ],
+    keyPhrases:['I\'m calling to follow up...', 'Did you have a chance to review...', 'Any feedback on the quotation?', 'Do you have any questions?']
+  }
+];
+
+const grammarDB = [
+  {
+    title:'时态 · 一般现在 vs 现在进行',
+    icon:'⏰',
+    desc:'最容易混淆的两个时态',
+    detail:`<div class="grammar-example"><span class="wrong">✗ I am understand.</span> → <span class="right">I understand.</span></div>
+    <div class="grammar-example"><span class="wrong">✗ She works now.</span> → <span class="right">She is working now.</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">规律：表示习惯、事实用一般现在；表示此刻正在做用现在进行。</p>`,
+    quiz:{ q:'I ______ English every day.', opts:['study','am studying','studied','have studied'], answer:0, explain:'每天学习是习惯性动作，用一般现在时 study。' }
+  },
+  {
+    title:'时态 · 一般过去 vs 现在完成',
+    icon:'📅',
+    desc:'过去的事现在还有没有关系？',
+    detail:`<div class="grammar-example"><span class="wrong">✗ I have been to Paris last year.</span> → <span class="right">I went to Paris last year.</span></div>
+    <div class="grammar-example"><span class="wrong">✗ I visited Japan already.</span> → <span class="right">I have visited Japan already.</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">有明确时间（last year, yesterday）→ 一般过去；没有明确时间、强调经历或结果 → 现在完成。</p>`,
+    quiz:{ q:'I ______ to Shanghai three times.', opts:['went','have been','go','was'], answer:1, explain:'去了三次是到现在的经历，用现在完成时 have been。' }
+  },
+  {
+    title:'冠词 · a / an / the',
+    icon:'📝',
+    desc:'什么时候加、什么时候不加？',
+    detail:`<div class="grammar-example"><span class="wrong">✗ I want to buy phone.</span> → <span class="right">I want to buy a phone.</span></div>
+    <div class="grammar-example"><span class="wrong">✗ Sun is very bright.</span> → <span class="right">The sun is very bright.</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">泛指用a/an，特指用the。独一无二的东西（太阳、月亮）前加the。</p>`,
+    quiz:{ q:'I need ______ umbrella. It\'s raining.', opts:['a','an','the','(不填)'], answer:1, explain:'umbrella 以元音开头，泛指一把雨伞用 an。' }
+  },
+  {
+    title:'介词 · in / on / at',
+    icon:'📍',
+    desc:'时间和地点介词怎么选？',
+    detail:`<div class="grammar-example">时间：in + 月/年/季节 → <span class="right">in June</span>；on + 具体日期 → <span class="right">on Monday</span>；at + 具体时刻 → <span class="right">at 3pm</span></div>
+    <div class="grammar-example">地点：in + 大范围 → <span class="right">in China</span>；on + 表面 → <span class="right">on the table</span>；at + 小地点 → <span class="right">at the airport</span></div>`,
+    quiz:{ q:'I\'ll meet you ______ Monday ______ 3 o\'clock.', opts:['on, at','at, on','in, at','on, in'], answer:0, explain:'Monday是具体日期用on，3点是具体时刻用at。' }
+  },
+  {
+    title:'疑问句 · 语序别搞反',
+    icon:'❓',
+    desc:'问句的 word order 是很多人的坑',
+    detail:`<div class="grammar-example"><span class="wrong">✗ Where you are going?</span> → <span class="right">Where are you going?</span></div>
+    <div class="grammar-example"><span class="wrong">✗ You speak English?</span> → <span class="right">Do you speak English?</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">英语问句要倒装：疑问词 + 助动词/be动词 + 主语 + 动词原形。</p>`,
+    quiz:{ q:'______ she ______ to work by bus?', opts:['Does, goes','Does, go','Is, goes','Do, go'], answer:1, explain:'第三人称单数用Does，后面动词恢复原形 go。' }
+  },
+  {
+    title:'不可数名词别加s',
+    icon:'💧',
+    desc:'water, information, advice 这些永远不加s',
+    detail:`<div class="grammar-example"><span class="wrong">✗ I need some informations.</span> → <span class="right">I need some information.</span></div>
+    <div class="grammar-example"><span class="wrong">✗ He gave me a good advice.</span> → <span class="right">He gave me some good advice.</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">常见的不可数名词：information, advice, news, furniture, equipment, luggage, homework, research, progress。</p>`,
+    quiz:{ q:'Can you give me some ______ about this product?', opts:['information','informations','an information','the information'], answer:0, explain:'information 是不可数名词，不加 s，也不加 a/an。' }
+  },
+];
+
+const listenDB = [
+  { scene:'餐厅', text:'I\'d like a table for two, please. Do you have any availability tonight?', opts:['要两人桌，问今晚有没有位置','要两个盘子，问今晚有没有空','要两杯酒，问今晚有没有优惠','要预约两个人，问今晚有没有厨师'], answer:0, explain:'a table for two = 两人桌；availability = 有没有空位/可预订。' },
+  { scene:'机场', text:'Your flight has been delayed by two hours. We apologize for the inconvenience.', opts:['航班取消了，很抱歉','航班延误两小时，很抱歉','航班提前了两小时，很抱歉','航班改到明天，很抱歉'], answer:1, explain:'delayed by two hours = 延误了两小时；inconvenience = 不便。' },
+  { scene:'酒店', text:'Could you confirm your checkout time? Standard checkout is at 11 AM.', opts:['确认退房时间，标准退房是上午11点','确认入住时间，标准入住是上午11点','确认续住时间，标准续住是上午11点','确认早餐时间，早餐是上午11点'], answer:0, explain:'checkout = 退房；standard checkout = 标准退房时间。' },
+  { scene:'购物', text:'This item is on sale. You can get 20% off if you buy two or more.', opts:['商品断货了，买两个以上可以等','商品打折了，买两个以上打八折','商品涨价了，买两个以上有优惠','商品是新品，买两个以上有赠品'], answer:1, explain:'on sale = 打折；20% off = 打八折（减20%）。' },
+  { scene:'商务', text:'We\'d like to discuss the pricing and see if we can negotiate a better deal.', opts:['想讨论交期，看能不能提前','想讨论价格，看能不能谈更好的条件','想讨论质量，看能不能换供应商','想讨论物流，看能不能用海运'], answer:1, explain:'pricing = 定价/价格；negotiate = 谈判；a better deal = 更好的条件。' },
+  { scene:'日常', text:'Sorry, I didn\'t catch that. Could you say it again?', opts:['对不起，我没抓住那个东西','对不起，我刚才没听清，能再说一遍吗','对不起，我没赶上那班车','对不起，我不太理解那个词'], answer:1, explain:'I didn\'t catch that = 我没听清/没接住你说的话。口语中比 I didn\'t hear you 更自然。' },
+  { scene:'社交', text:'I\'m looking forward to meeting you in person next week.', opts:['我期待下周能和你一起运动','我期待下周能亲自见到你','我期待下周能和你通电话','我期待下周能收到你的邮件'], answer:1, explain:'look forward to = 期待；in person = 亲自/当面。' },
+  { scene:'医院', text:'I\'ve been having a headache for three days, and it\'s getting worse.', opts:['我三天前头疼了一下就好了','我头疼了三天，而且越来越严重','我三天前看了医生，现在好了','我头疼了三天，吃药后好多了'], answer:1, explain:'have been having = 一直在持续；getting worse = 越来越严重。' },
+];
+
+// ===== 状态管理 =====
+let state = {
+  vocabFilter: '全部',
+  masteredWords: JSON.parse(localStorage.getItem('eng_mastered') || '[]'),
+  currentScene: 0,
+  dialogHistory: [],
+  listenSpeed: 0.7,
+  learnedCount: parseInt(localStorage.getItem('eng_learned') || '0'),
+  lastDay: localStorage.getItem('eng_lastDay') || '',
+  // 间隔重复数据
+  reviewData: JSON.parse(localStorage.getItem('eng_review') || '{}'),
+  // 当天抽题结果
+  dailyContent: JSON.parse(localStorage.getItem('eng_daily_' + new Date().toISOString().slice(0,10)) || 'null'),
+};
+
+function saveState() {
+  localStorage.setItem('eng_mastered', JSON.stringify(state.masteredWords));
+  localStorage.setItem('eng_learned', state.learnedCount);
+  localStorage.setItem('eng_lastDay', state.lastDay);
+  localStorage.setItem('eng_review', JSON.stringify(state.reviewData));
+}
+
+// ===== 每日内容生成（基于日期种子） =====
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function shuffleWithSeed(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateDailyContent() {
+  const today = new Date().toISOString().slice(0,10);
+  const seed = today.split('-').join('') * 1;
+  const rng = seededRandom(seed);
+
+  // 检查是否有到期的复习内容
+  const dueForReview = getDueReviewItems();
+
+  // 每日抽取数量
+  const DAILY_VOCAB = 50;
+  const DAILY_GRAMMAR = 2;
+  const DAILY_LISTEN = 3;
+  const DAILY_SPEAKING = 1;
+
+  // 词汇：优先复习到期的，不足则从新词补
+  let todayVocab;
+  if (dueForReview.vocab.length >= DAILY_VOCAB) {
+    todayVocab = shuffleWithSeed(dueForReview.vocab, rng).slice(0, DAILY_VOCAB);
+  } else {
+    const reviewPart = dueForReview.vocab;
+    const newWords = vocabDB.filter(v => !reviewPart.some(r => r.word === v.word));
+    const needMore = DAILY_VOCAB - reviewPart.length;
+    todayVocab = [...reviewPart, ...shuffleWithSeed(newWords, rng).slice(0, needMore)];
+  }
+
+  // 语法：从所有语法中随机抽取
+  const todayGrammar = shuffleWithSeed(grammarDB.map((g,i) => i), rng).slice(0, DAILY_GRAMMAR);
+
+  // 听力：从所有听力中随机抽取
+  const todayListen = shuffleWithSeed(listenDB.map((l,i) => i), rng).slice(0, DAILY_LISTEN);
+
+  // 口语：从所有场景中随机抽取
+  const todaySpeaking = shuffleWithSeed(scenesDB.map((s,i) => i), rng).slice(0, DAILY_SPEAKING);
+
+  const content = {
+    date: today,
+    vocab: todayVocab.map(v => v.word),
+    grammar: todayGrammar,
+    listen: todayListen,
+    speaking: todaySpeaking,
+  };
+
+  localStorage.setItem('eng_daily_' + today, JSON.stringify(content));
+  state.dailyContent = content;
+  return content;
+}
+
+function getTodayContent() {
+  const today = new Date().toISOString().slice(0,10);
+  if (state.dailyContent && state.dailyContent.date === today) {
+    return state.dailyContent;
+  }
+  return generateDailyContent();
+}
+
+// ===== 间隔重复系统 =====
+// 间隔天数：1, 3, 7, 14, 30
+const REVIEW_INTERVALS = [1, 3, 7, 14, 30];
+
+function recordReview(word) {
+  const today = new Date().toISOString().slice(0,10);
+  const data = state.reviewData;
+  if (!data[word]) {
+    data[word] = { level: 0, lastReview: today };
+  } else {
+    data[word].level = Math.min(data[word].level + 1, REVIEW_INTERVALS.length - 1);
+    data[word].lastReview = today;
+  }
+  localStorage.setItem('eng_review', JSON.stringify(data));
+}
+
+function getDueReviewItems() {
+  const today = new Date();
+  const data = state.reviewData;
+  const due = [];
+
+  for (const [word, info] of Object.entries(data)) {
+    const lastDate = new Date(info.lastReview);
+    const daysSince = Math.round((today - lastDate) / 86400000);
+    const interval = REVIEW_INTERVALS[info.level] || 30;
+    if (daysSince >= interval) {
+      const vocabItem = vocabDB.find(v => v.word === word);
+      if (vocabItem) due.push(vocabItem);
+    }
+  }
+
+  return { vocab: due };
+}
+
+const today = new Date().toISOString().slice(0,10);
+if (state.lastDay !== today) {
+  // 新的一天，生成今日内容
+  generateDailyContent();
+  // 计算连续天数
+  const lastDate = new Date(state.lastDay);
+  const todayDate = new Date(today);
+  const diffDays = Math.round((todayDate - lastDate) / 86400000);
+  let streak = parseInt(localStorage.getItem('eng_streak') || '0');
+  if (diffDays === 1) streak++;
+  else if (diffDays > 1) streak = 1;
+  localStorage.setItem('eng_streak', streak);
+  state.learnedCount = parseInt(localStorage.getItem('eng_learned_yesterday') || '0');
+  localStorage.setItem('eng_learned_yesterday', state.learnedCount);
+} else {
+  // 同一天第一次打开，确保有 streak
+  if (!localStorage.getItem('eng_streak') || parseInt(localStorage.getItem('eng_streak')) === 0) {
+    localStorage.setItem('eng_streak', '1');
+  }
+}
+state.lastDay = today;
+saveState();
+
+// ===== 朗读 =====
+let currentAudio = null;
+function speak(text, btn, rate) {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (!text) return;
+  const speed = rate || 0.75;
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
+  const audio = new Audio(url);
+  currentAudio = audio;
+  if (btn) { btn.classList.add('playing'); audio.onended = audio.onerror = () => { btn.classList.remove('playing'); currentAudio = null; }; }
+  audio.play().catch(() => {
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = speed;
+      window.speechSynthesis.speak(u);
+    }
+    if (btn) setTimeout(() => btn.classList.remove('playing'), 2000);
+  });
+}
+
+// ===== 导航 =====
+document.querySelectorAll('.tabbar .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tabbar .tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'progress') renderProgress();
+  });
+});
+
+// ===== 词汇模块 =====
+function renderVocab() {
+  const daily = getTodayContent();
+  const cats = ['今日', '全部', ...new Set(vocabDB.map(v => v.cat))];
+  const filtersEl = document.getElementById('vocabFilters');
+  filtersEl.innerHTML = cats.map(c =>
+    `<button class="vocab-filter ${state.vocabFilter === c ? 'active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+  filtersEl.querySelectorAll('.vocab-filter').forEach(btn => {
+    btn.addEventListener('click', () => { state.vocabFilter = btn.dataset.cat; renderVocab(); });
+  });
+
+  let items;
+  if (state.vocabFilter === '今日') {
+    items = daily.vocab.map(w => vocabDB.find(v => v.word === w)).filter(Boolean);
+  } else if (state.vocabFilter === '全部') {
+    items = vocabDB;
+  } else {
+    items = vocabDB.filter(v => v.cat === state.vocabFilter);
+  }
+  const grouped = {};
+  items.forEach(v => {
+    const key = v.cat + '|' + (v.subcat || '其他');
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(v);
+  });
+
+  const difficultyLabels = {1:'基础', 2:'进阶', 3:'高级'};
+  const difficultyColors = {1:'rgba(139,171,126,0.12)', 2:'rgba(196,182,154,0.12)', 3:'rgba(196,92,92,0.12)'};
+  const difficultyTextColors = {1:'var(--done)', 2:'var(--accent)', 3:'var(--danger)'};
+
+  let html = '';
+  for (const [key, words] of Object.entries(grouped)) {
+    const [cat, subcat] = key.split('|');
+    html += `<div class="vocab-category"><div class="vocab-cat-title">${cat}${subcat !== '其他' ? ' · ' + subcat : ''}</div>`;
+    words.forEach((v, i) => {
+      const id = v.word;
+      const mastered = state.masteredWords.includes(id);
+      const reviewInfo = state.reviewData[id];
+      let reviewBadge = '';
+      if (reviewInfo && !mastered) {
+        const lastDate = new Date(reviewInfo.lastReview);
+        const daysSince = Math.round((new Date() - lastDate) / 86400000);
+        const interval = REVIEW_INTERVALS[reviewInfo.level] || 30;
+        if (daysSince >= interval) {
+          reviewBadge = `<span style="font-size:10px;padding:1px 6px;background:rgba(196,92,92,0.12);color:var(--danger);border-radius:8px;margin-left:4px">待复习</span>`;
+        }
+      }
+      const diff = v.difficulty || 1;
+      const diffBadge = `<span style="font-size:10px;padding:1px 6px;background:${difficultyColors[diff]};color:${difficultyTextColors[diff]};border-radius:8px;margin-left:4px">${difficultyLabels[diff]}</span>`;
+      html += `<div class="vocab-item" data-word="${id}" onclick="this.classList.toggle('expanded')">
+        <div class="vocab-main">
+          <div class="vocab-word">${v.word} <button class="speak-btn" onclick="event.stopPropagation();speak('${v.word.replace(/'/g,"\\'")}',this)" title="朗读">🔊</button>
+            <button class="vocab-mastered ${mastered?'done':''}" onclick="event.stopPropagation();toggleMastered('${id}')" title="标记已掌握">${mastered?'✓ 已掌握':'○'}</button>
+            ${diffBadge}
+            ${reviewBadge}
+          </div>
+          <div class="vocab-phonetic">${v.phonetic}</div>
+          <div class="vocab-meaning">${v.meaning}</div>
+          <div class="vocab-detail">
+            <div class="vocab-sentence"><span class="en">${v.sentence}</span><br><span class="zh">${v.zh}</span></div>
+            <div class="vocab-context">💡 ${v.context}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  document.getElementById('vocabList').innerHTML = html;
+  document.getElementById('statLearned').textContent = state.masteredWords.length;
+}
+
+function toggleMastered(word) {
+  const idx = state.masteredWords.indexOf(word);
+  if (idx >= 0) state.masteredWords.splice(idx, 1);
+  else {
+    state.masteredWords.push(word);
+    recordReview(word); // 标记掌握时开始间隔重复计时
+  }
+  saveState();
+  renderVocab();
+}
+
+// ===== 口语模块 =====
+function renderScenes() {
+  const daily = getTodayContent();
+  const sel = document.getElementById('sceneSelector');
+  sel.innerHTML = daily.speaking.map(idx => {
+    const s = scenesDB[idx];
+    return `<button class="scene-btn ${state.currentScene === idx ? 'active' : ''}" data-idx="${idx}">${s.icon} ${s.name}</button>`;
+  }).join('');
+  sel.querySelectorAll('.scene-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.currentScene = parseInt(btn.dataset.idx);
+      state.dialogHistory = [];
+      renderDialog();
+      renderScenes();
+    });
+  });
+  // 确保当前场景在今日列表中
+  if (!daily.speaking.includes(state.currentScene)) {
+    state.currentScene = daily.speaking[0];
+    state.dialogHistory = [];
+    renderDialog();
+  }
+}
+
+function renderDialog() {
+  const scene = scenesDB[state.currentScene];
+  const box = document.getElementById('dialogBox');
+  let html = '';
+  scene.lines.forEach(line => {
+    if (line.who === 'hint') {
+      html += `<div class="card" style="border-left:3px solid var(--accent);margin-bottom:12px">
+        <div class="card-desc" style="margin:0">💡 ${line.text}</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+          ${scene.keyPhrases.map(p => `<span style="font-size:11px;padding:2px 8px;background:var(--accent-light);border-radius:10px;color:var(--text-muted)">${p}</span>`).join('')}
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="dialog-line">
+        <div class="dialog-avatar">${line.who === 'server' ? '🧑‍🍳' : line.who === 'receptionist' ? '👩‍💼' : line.who === 'shopkeeper' ? '👩‍💼' : line.who === 'client' ? '🤝' : '👤'}</div>
+        <div class="dialog-bubble">${line.text}
+          <button class="speak-btn" style="margin-left:6px;vertical-align:middle" onclick="event.stopPropagation();speak('${line.text.replace(/'/g,"\\'")}',this)" title="朗读">🔊</button>
+        </div>
+      </div>`;
+    }
+  });
+
+  state.dialogHistory.forEach(d => {
+    html += `<div class="dialog-line user">
+      <div class="dialog-avatar">🧑</div>
+      <div class="dialog-bubble">${d.user}</div>
+    </div>`;
+    if (d.reply) {
+      html += `<div class="dialog-line">
+        <div class="dialog-avatar">🤝</div>
+        <div class="dialog-bubble">${d.reply}</div>
+      </div>`;
+    }
+  });
+
+  html += `<div class="dialog-input-row">
+    <input class="dialog-input" id="dialogInput" placeholder="用英语回复..." onkeydown="if(event.key==='Enter')submitDialog()">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="点击语音输入">🎤</button>
+    <button class="dialog-submit" onclick="submitDialog()">发送</button>
+  </div>`;
+  box.innerHTML = html;
+
+  document.getElementById('dialogInput').focus();
+}
+
+// ===== 语音识别 =====
+let recognition = null;
+let isRecording = false;
+
+function toggleMic() {
+  if (isRecording) { stopMic(); return; }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('你的浏览器不支持语音识别功能，建议用 Chrome 或 Safari 浏览器打开。');
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  const micBtn = document.getElementById('micBtn');
+  const input = document.getElementById('dialogInput');
+
+  recognition.onstart = () => {
+    isRecording = true;
+    micBtn.classList.add('recording');
+    micBtn.title = '点击停止录音';
+    input.placeholder = '正在听你说...';
+  };
+
+  recognition.onresult = (e) => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    input.value = transcript;
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') return;
+    // 权限被拒后提示用户设置一次永久权限
+    if (e.error === 'not-allowed') {
+      stopMic();
+      micBtn.title = '请在浏览器地址栏锁图标处永久允许麦克风';
+      input.placeholder = '请点击地址栏🔒允许麦克风后再试';
+      input.value = '';
+      return;
+    }
+    console.log('Speech recognition error:', e.error);
+    stopMic();
+  };
+
+  recognition.onend = () => {
+    if (isRecording) {
+      // 意外停止时自动重试，保持录音状态
+      try { recognition.start(); } catch(e) { stopMic(); }
+      return;
+    }
+    stopMic();
+  };
+  recognition.start();
+}
+
+function stopMic() {
+  isRecording = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+  const micBtn = document.getElementById('micBtn');
+  const input = document.getElementById('dialogInput');
+  if (micBtn) { micBtn.classList.remove('recording'); micBtn.title = '点击语音输入'; }
+  if (input) input.placeholder = '用英语回复...';
+}
+
+function submitDialog() {
+  const input = document.getElementById('dialogInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const scene = scenesDB[state.currentScene];
+  const fb = document.getElementById('dialogFeedback');
+  const words = text.toLowerCase().split(/\s+/);
+  const keyWords = scene.keyPhrases.join(' ').toLowerCase().split(/\s+/);
+  const matched = keyWords.filter(kw => words.some(w => w.includes(kw.replace(/[^a-z]/g,''))));
+  const uniqueMatched = [...new Set(matched)];
+  const wordCount = words.length;
+  let score = Math.min(100, Math.round(uniqueMatched.length / scene.keyPhrases.length * 100));
+  if (wordCount < 5) score = Math.max(score - 20, 0);
+  if (wordCount > 40) score = Math.max(score - 10, 0);
+
+  // 语法检查
+  const grammarIssues = checkGrammarIssues(text);
+  const grammarScore = Math.max(0, 100 - grammarIssues.length * 15);
+  const totalScore = Math.round(score * 0.5 + grammarScore * 0.5);
+
+  const suggestions = [];
+  if (wordCount < 5) suggestions.push('回答太短，试着多说两句');
+  if (wordCount > 40) suggestions.push('回答偏长，简洁一些更好');
+  if (uniqueMatched.length === 0) suggestions.push('没有匹配到关键表达，可以参考上面提示的句型');
+  else suggestions.push('匹配到的表达：' + uniqueMatched.slice(0,3).join(', '));
+
+  let reply = '';
+  if (totalScore >= 80) reply = 'Very good! 表达流畅，语法基本正确。';
+  else if (totalScore >= 60) reply = 'Not bad! 意思到了，注意看看下面的语法提示。';
+  else if (totalScore >= 40) reply = '有进步空间，重点看语法问题。';
+  else reply = 'Keep trying! 先参考上面的提示句型，慢慢来。';
+
+  let html = `<div style="margin-bottom:6px"><strong>综合评分：${totalScore}/100</strong> <span style="font-size:11px;color:var(--text-muted)">(表达${score} · 语法${grammarScore})</span></div>`;
+  html += suggestions.join('<br>');
+
+  // 语法反馈区块
+  if (grammarIssues.length > 0) {
+    html += `<div style="margin-top:10px;padding:10px 12px;background:rgba(196,92,92,0.08);border-radius:var(--radius-sm);border-left:3px solid var(--danger);font-size:12px;line-height:1.8">`;
+    html += `<div style="font-weight:600;color:var(--danger);margin-bottom:4px">语法检查</div>`;
+    grammarIssues.forEach(issue => {
+      html += `<div style="margin-bottom:4px">`;
+      if (issue.wrong && issue.correct) {
+        html += `<span style="color:var(--danger);text-decoration:line-through">${issue.wrong}</span> → <span style="color:var(--done);font-weight:500">${issue.correct}</span>`;
+      } else {
+        html += `<span style="color:var(--danger)">⚠</span> ${issue.message}`;
+      }
+      if (issue.explain) html += `<div style="color:var(--text-muted);font-size:11px;margin-top:2px">${issue.explain}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div style="margin-top:8px;color:var(--done);font-size:12px">✓ 没有发现明显语法问题</div>`;
+  }
+
+  html += `<div style="margin-top:6px;font-style:italic;color:var(--accent)">${reply}</div>`;
+
+  state.dialogHistory.push({ user: text, reply });
+  // 记录口语场景完成状态
+  const sp = JSON.parse(localStorage.getItem('eng_speaking_done') || '[]');
+  if (!sp.includes(state.currentScene)) { sp.push(state.currentScene); localStorage.setItem('eng_speaking_done', JSON.stringify(sp)); }
+  fb.style.display = 'block';
+  fb.innerHTML = html;
+
+  input.value = '';
+  renderDialog();
+  fb.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== 语法检查引擎 =====
+function checkGrammarIssues(text) {
+  const issues = [];
+  const t = text.trim();
+  const lower = t.toLowerCase();
+  const sentences = t.replace(/([.!?])\s+/g, '$1|||').split('|||').filter(Boolean);
+
+  // 规则1：主谓一致 - 第三人称单数
+  const thirdPersonWrong = [
+    { re: /\b(he|she|it)\s+(go|do|have|make|take|come|see|know|think|want|need|like|say|tell|get|give|put|run|eat|play|work|live|study|try|help|call|ask|use|open|close|move|start|turn|find|keep|let|read|write|feel|leave|bring|begin|show|hear|offer|provide|send|meet|lead|fall|carry|drive|write|grow|hold|sell|stand|understand|lose|pay|meet|include|set|learn|change|follow|stop|create|speak|read|allow|add|spend|grow|open|walk|win|offer|remember|love|consider|appear|buy|wait|serve|die|send|build|stay|fall|cut|reach|kill|remain|suggest|raise|pass|sell|require|report|decide|pull)\b/gi, msg:'第三人称单数动词需要加 -s/-es', explain:'he/she/it 做主语时，动词要加 s，例如 goes、does、has' },
+  ];
+  thirdPersonWrong.forEach(rule => {
+    let m;
+    while ((m = rule.re.exec(lower)) !== null) {
+      // 排除情态动词/助动词后面的情况
+      const before = lower.slice(Math.max(0, m.index - 20), m.index);
+      if (!/\b(can|could|will|would|shall|should|may|might|must|do|does|did|to|not|don't|doesn't|didn't|isn't|aren't|wasn't|won't|hasn't|haven't|hadn't)\s*$/.test(before)) {
+        const word = m[0];
+        issues.push({ wrong: word, correct: word + (word.endsWith('sh') || word.endsWith('ch') || word.endsWith('s') || word.endsWith('x') || word.endsWith('z') ? 'es' : 's'), message: `主谓一致：he/she/it 后面动词需要变形`, explain: rule.explain });
+      }
+    }
+  });
+
+  // 规则2：缺少主语
+  if (/^\s*(go|do|have|make|take|come|see|want|need|like|is|are|am|was|were|will|can|could|should|would)\b/i.test(t) && !/^(yes|no|ok|hello|hi|hey|sure|please|sorry|thanks|thank|excuse|well|so|and|but|or|because|if|when|where|how|what|why|who|which)\b/i.test(t)) {
+    const firstWord = t.split(/\s+/)[0];
+    issues.push({ wrong: firstWord, correct: null, message: '缺少主语', explain: '英语句子需要主语，例如 "I want..." 而不是直接说 "Want..."' });
+  }
+
+  // 规则3：a/an 用错
+  const aAnRe = /\b(a)\s+([aeiou])/gi;
+  let mA;
+  while ((mA = aAnRe.exec(t)) !== null) {
+    const word = mA[2];
+    if (!/^(univ|uni|use|us[eu]|util)/i.test(word)) {
+      issues.push({ wrong: 'a ' + word, correct: 'an ' + word, message: '冠词用法', explain: '元音开头的名词前用 an，不用 a' });
+    }
+  }
+
+  // 规则4：I 大小写
+  if (/\bi\b/.test(t.replace(/I'm|I've|I'll|I'd|I'm/gi, ''))) {
+    const fixed = t.replace(/\bi\b/g, 'I');
+    issues.push({ wrong: 'i', correct: 'I', message: '英语中 "我" 永远大写', explain: 'I 无论在句首还是句中都要大写' });
+  }
+
+  // 规则5：时态混乱标志
+  const tenseMixRe = /\b(yesterday|last week|last month|ago|before)\b.*?\b(will|can|shall)\b/gi;
+  if (tenseMixRe.test(t)) {
+    issues.push({ wrong: null, correct: null, message: '时态矛盾：过去的时间词和将来时混用', explain: '有 yesterday/ago/last week 时应该用过去时，不用 will/can' });
+  }
+
+  // 规则6：double 否定
+  const doubleNeg = /\b(don't|doesn't|didn't|can't|won't|wouldn't|couldn't|shouldn't|isn't|aren't|wasn't|weren't|never|no|nothing|nobody|nowhere)\b.*?\b(don't|doesn't|didn't|can't|won't|wouldn't|couldn't|shouldn't|never|no|nothing|nobody|nowhere)\b/i;
+  if (doubleNeg.test(t)) {
+    issues.push({ wrong: null, correct: null, message: '双重否定', explain: '英语中双重否定表示肯定，通常你想表达的是单否定，例如用 "I don\'t know" 而不是 "I don\'t know nothing"' });
+  }
+
+  // 规则7：缺少be动词
+  if (/\b(I|he|she|it|we|they|you)\s+(very|really|also|always|never|just|already|still|even)\s+\w+/i.test(t)) {
+    const match = t.match(/\b(I|he|she|it|we|they|you)\s+(very|really|also|always|never|just|already|still|even)\s+(\w+)/i);
+    if (match) {
+      issues.push({ wrong: match[0], correct: null, message: '可能缺少 be 动词', explain: '例如 "I very happy" 应该是 "I am very happy"' });
+    }
+  }
+
+  // 规则8：拼写常见错误
+  const commonMistakes = [
+    [/(\w+)ed\b/g, (m) => { if (/[^aeiou]y$/.test(m[1]) && !/ed$/.test(m[0])) return [m[0], m[1] + 'ied']; return null; }],
+  ];
+  // 规则9：could of / should of / would of
+  if (/\b(could|should|would|might)\s+of\b/i.test(t)) {
+    const match = t.match(/\b(could|should|would|might)\s+of\b/i);
+    issues.push({ wrong: match[0], correct: match[1] + ' have', message: '固定搭配错误', explain: '应该是 ' + match[1] + ' have，不是 ' + match[1] + ' of' });
+  }
+
+  // 规则10：there is + 复数
+  if (/\bthere\s+is\s+\w*\s*(many|few|several|a\s+few|two|three|four|five|\d+)\b/i.test(t))
+    issues.push({ wrong: 'there is + 复数', correct: 'there are', message: '主谓一致', explain: '后面跟复数名词时用 there are' });
+
+  // 规则11：more + 短形容词
+  if (/\bmore\s+(big|small|tall|short|fast|slow|good|bad|nice|hot|cold|long|old|new|high|low|fat|thin)\b/i.test(t)) {
+    const match = t.match(/\bmore\s+(big|small|tall|short|fast|slow|good|bad|nice|hot|cold|long|old|new|high|low|fat|thin)\b/i);
+    const map = {big:'bigger',small:'smaller',tall:'taller',short:'shorter',fast:'faster',slow:'slower',good:'better',bad:'worse',nice:'nicer',hot:'hotter',cold:'colder',long:'longer',old:'older',new:'newer',high:'higher',low:'lower',fat:'fatter',thin:'thinner'};
+    issues.push({ wrong: match[0], correct: map[match[1].toLowerCase()], message: '比较级形式', explain: '短形容词直接加 -er，不用 more' });
+  }
+
+  // 规则12：I am vs I is
+  if (/\bi\s+is\b/i.test(t))
+    issues.push({ wrong: 'I is', correct: 'I am', message: '人称与be动词', explain: '第一人称用 am，不用 is' });
+
+  // 规则13：do/does 后面动词原形
+  if (/\b(does|doesn't)\s+\w+(s|es|ed)\b/i.test(t) && !/\b(does|doesn't)\s+(go|do|have|say|see|get|make|take|come|know|think|want|need|like|look|feel|try|find|give|tell|say|put|say|watch|catch|teach|reach|touch|wash|push|finish|miss|pass|kiss)\b/i.test(t)) {
+    const match = t.match(/\b(does|doesn't)\s+(\w+(s|es))\b/i);
+    if (match && !['says','does','goes','has'].includes(match[2].toLowerCase()))
+      issues.push({ wrong: match[0], correct: match[1] + ' ' + match[2].replace(/s$|es$/, ''), message: '助动词后用原形', explain: 'does/doesn\'t 后面动词要用原形，不要加 s' });
+  }
+
+  // 规则14：was/were 用错
+  if (/\b(i|he|she|it)\s+were\b/i.test(t))
+    issues.push({ wrong: t.match(/\b(i|he|she|it)\s+were\b/i)[0], correct: t.match(/\b(i|he|she|it)\b/i)[0] + ' was', message: '主谓一致', explain: '单数主语用 was，不用 were' });
+  if (/\b(we|they|you)\s+was\b/i.test(t) && !/\byou\s+was\b/i.test(t))
+    issues.push({ wrong: t.match(/\b(we|they)\s+was\b/i)[0], correct: t.match(/\b(we|they)\b/i)[0] + ' were', message: '主谓一致', explain: '复数主语用 were，不用 was' });
+
+  // 限制最多返回5个问题
+  return issues.slice(0, 5);
+}
+
+// ===== 语法模块 =====
+function renderGrammar() {
+  const daily = getTodayContent();
+  let html = '';
+  daily.grammar.forEach(i => {
+    const g = grammarDB[i];
+    html += `<div class="card grammar-card" onclick="this.classList.toggle('expanded')">
+      <div class="card-title">${g.icon} ${g.title}</div>
+      <div class="card-desc">${g.desc}</div>
+      <div class="grammar-detail">
+        ${g.detail}
+        <div class="grammar-quiz" onclick="event.stopPropagation()">
+          <div class="quiz-q">${g.quiz.q}</div>
+          <div class="quiz-options" id="quiz_${i}">
+            ${g.quiz.opts.map((opt, j) => `<button class="quiz-opt" data-idx="${j}" onclick="checkGrammar(${i},${j})">${opt}</button>`).join('')}
+          </div>
+          <div class="quiz-explain" id="explain_${i}">${g.quiz.explain}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('grammarList').innerHTML = html;
+}
+
+function checkGrammar(quizIdx, optIdx) {
+  const g = grammarDB[quizIdx];
+  const container = document.getElementById('quiz_' + quizIdx);
+  container.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.disabled = true;
+    if (parseInt(btn.dataset.idx) === g.quiz.answer) btn.classList.add('correct');
+    else if (parseInt(btn.dataset.idx) === optIdx && optIdx !== g.quiz.answer) btn.classList.add('wrong');
+  });
+  document.getElementById('explain_' + quizIdx).style.display = 'block';
+  state.learnedCount++;
+  saveState();
+  // 记录语法完成状态
+  const gd = JSON.parse(localStorage.getItem('eng_grammar_done') || '[]');
+  if (!gd.includes(quizIdx)) { gd.push(quizIdx); localStorage.setItem('eng_grammar_done', JSON.stringify(gd)); }
+}
+
+// ===== 听力模块 =====
+function renderListening() {
+  const daily = getTodayContent();
+  let html = '';
+  daily.listen.forEach(i => {
+    const l = listenDB[i];
+    html += `<div class="card listen-card">
+      <div class="card-title">${l.scene}</div>
+      <button class="listen-play" onclick="speak('${l.text.replace(/'/g,"\\'")}',this,state.listenSpeed)">
+        <span class="play-icon">▶</span>
+        <span class="play-text">点击播放</span>
+        <span class="play-speed">${state.listenSpeed === 0.7 ? '慢速' : state.listenSpeed === 0.85 ? '正常' : '快速'}</span>
+      </button>
+      <div class="listen-options" id="listenOpts_${i}">
+        ${l.opts.map((opt, j) => `<button class="listen-opt" data-idx="${j}" onclick="checkListen(${i},${j})">${opt}</button>`).join('')}
+      </div>
+      <div class="listen-answer" id="listenAns_${i}"><strong>原文：</strong>${l.text}<br><br>${l.explain}</div>
+    </div>`;
+  });
+  document.getElementById('listenList').innerHTML = html;
+}
+
+function checkListen(listenIdx, optIdx) {
+  const l = listenDB[listenIdx];
+  const container = document.getElementById('listenOpts_' + listenIdx);
+  container.querySelectorAll('.listen-opt').forEach(btn => {
+    btn.disabled = true;
+    if (parseInt(btn.dataset.idx) === l.answer) btn.classList.add('correct');
+    else if (parseInt(btn.dataset.idx) === optIdx && optIdx !== l.answer) btn.classList.add('wrong');
+  });
+  document.getElementById('listenAns_' + listenIdx).style.display = 'block';
+  // 记录听力完成状态
+  const ld = JSON.parse(localStorage.getItem('eng_listen_done') || '[]');
+  if (!ld.includes(listenIdx)) { ld.push(listenIdx); localStorage.setItem('eng_listen_done', JSON.stringify(ld)); }
+}
+
+document.querySelectorAll('.speed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.listenSpeed = parseFloat(btn.dataset.speed);
+  });
+});
+
+// ===== 进度模块 =====
+function renderProgress() {
+  const totalVocab = vocabDB.length;
+  const mastered = state.masteredWords.length;
+  const vocabPct = totalVocab > 0 ? Math.round(mastered / totalVocab * 100) : 0;
+  const daily = getTodayContent();
+
+  // 复习统计
+  const dueReview = getDueReviewItems();
+  const totalInReview = Object.keys(state.reviewData).length;
+
+  // 词汇：按分类统计
+  const vocabCats = {};
+  vocabDB.forEach(v => { if (!vocabCats[v.cat]) vocabCats[v.cat] = { total: 0, done: 0 }; vocabCats[v.cat].total++; if (state.masteredWords.includes(v.word)) vocabCats[v.cat].done++; });
+
+  // 语法：用 localStorage 记录做对了哪些题
+  const grammarDone = JSON.parse(localStorage.getItem('eng_grammar_done') || '[]');
+  const grammarPct = grammarDB.length > 0 ? Math.round(grammarDone.length / grammarDB.length * 100) : 0;
+
+  // 听力：用 localStorage 记录做对了哪些题
+  const listenDone = JSON.parse(localStorage.getItem('eng_listen_done') || '[]');
+  const listenPct = listenDB.length > 0 ? Math.round(listenDone.length / listenDB.length * 100) : 0;
+
+  // 口语：用 localStorage 记录练了哪些场景
+  const speakingDone = JSON.parse(localStorage.getItem('eng_speaking_done') || '[]');
+  const speakingPct = scenesDB.length > 0 ? Math.round(speakingDone.length / scenesDB.length * 100) : 0;
+
+  // 连续天数
+  const streak = parseInt(localStorage.getItem('eng_streak') || '0');
+
+  // 四大数字
+  document.getElementById('progressSummary').innerHTML = `
+    <div class="progress-summary-item"><div class="ps-num">${daily.vocab.length}</div><div class="ps-label">今日单词</div></div>
+    <div class="progress-summary-item"><div class="ps-num">${dueReview.vocab.length}</div><div class="ps-label">待复习</div></div>
+    <div class="progress-summary-item"><div class="ps-num">${mastered}</div><div class="ps-label">已掌握</div></div>
+    <div class="progress-summary-item"><div class="ps-num">${streak}</div><div class="ps-label">连续天数</div></div>`;
+
+  document.getElementById('progressStreak').innerHTML = `
+    <div class="streak-num">${streak}</div>
+    <div class="streak-label">连续学习天数</div>`;
+
+  // 词汇模块
+  let vocabChips = '';
+  for (const [cat, data] of Object.entries(vocabCats)) {
+    vocabChips += `<span class="progress-chip ${data.done === data.total ? 'done' : ''}">${cat} ${data.done}/${data.total}</span>`;
+  }
+
+  // 语法模块 — 列出每个知识点完成状态
+  let grammarChips = '';
+  grammarDB.forEach((g, i) => {
+    const done = grammarDone.includes(i);
+    grammarChips += `<span class="progress-chip ${done ? 'done' : ''}">${g.title.replace(/·|·/g,' ').slice(0,12)} ${done ? '✓' : '○'}</span>`;
+  });
+
+  // 听力模块
+  let listenChips = '';
+  listenDB.forEach((l, i) => {
+    const done = listenDone.includes(i);
+    listenChips += `<span class="progress-chip ${done ? 'done' : ''}">${l.scene} ${done ? '✓' : '○'}</span>`;
+  });
+
+  // 口语模块
+  let speakingChips = '';
+  scenesDB.forEach((s, i) => {
+    const done = speakingDone.includes(i);
+    speakingChips += `<span class="progress-chip ${done ? 'done' : ''}">${s.icon} ${s.name} ${done ? '✓' : '○'}</span>`;
+  });
+
+  document.getElementById('progressModules').innerHTML = `
+    <div class="progress-module">
+      <div class="progress-module-header">
+        <div class="pmh-left"><span class="pmh-icon">📚</span><span class="pmh-title">词汇</span></div>
+        <div class="pmh-bar"><span class="pmh-stats">${mastered} / ${totalVocab}</span><span class="pmh-pct">${vocabPct}%</span></div>
+      </div>
+      <div class="progress-module-body">
+        <div class="progress-chips">${vocabChips || '<span class="progress-chip">暂无数据</span>'}</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-label"><span>总进度</span><span>${vocabPct}%</span></div>
+          <div class="progress-bar-track"><div class="progress-bar-fill ${vocabPct === 100 ? 'done' : ''}" style="width:${vocabPct}%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-module">
+      <div class="progress-module-header">
+        <div class="pmh-left"><span class="pmh-icon">✏️</span><span class="pmh-title">语法</span></div>
+        <div class="pmh-bar"><span class="pmh-stats">${grammarDone.length} / ${grammarDB.length}</span><span class="pmh-pct">${grammarPct}%</span></div>
+      </div>
+      <div class="progress-module-body">
+        <div class="progress-chips">${grammarChips || '<span class="progress-chip">暂无数据</span>'}</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-label"><span>总进度</span><span>${grammarPct}%</span></div>
+          <div class="progress-bar-track"><div class="progress-bar-fill ${grammarPct === 100 ? 'done' : ''}" style="width:${grammarPct}%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-module">
+      <div class="progress-module-header">
+        <div class="pmh-left"><span class="pmh-icon">🎧</span><span class="pmh-title">听力</span></div>
+        <div class="pmh-bar"><span class="pmh-stats">${listenDone.length} / ${listenDB.length}</span><span class="pmh-pct">${listenPct}%</span></div>
+      </div>
+      <div class="progress-module-body">
+        <div class="progress-chips">${listenChips || '<span class="progress-chip">暂无数据</span>'}</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-label"><span>总进度</span><span>${listenPct}%</span></div>
+          <div class="progress-bar-track"><div class="progress-bar-fill ${listenPct === 100 ? 'done' : ''}" style="width:${listenPct}%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-module">
+      <div class="progress-module-header">
+        <div class="pmh-left"><span class="pmh-icon">🗣️</span><span class="pmh-title">口语</span></div>
+        <div class="pmh-bar"><span class="pmh-stats">${speakingDone.length} / ${scenesDB.length}</span><span class="pmh-pct">${speakingPct}%</span></div>
+      </div>
+      <div class="progress-module-body">
+        <div class="progress-chips">${speakingChips || '<span class="progress-chip">暂无数据</span>'}</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-label"><span>总进度</span><span>${speakingPct}%</span></div>
+          <div class="progress-bar-track"><div class="progress-bar-fill ${speakingPct === 100 ? 'done' : ''}" style="width:${speakingPct}%"></div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ===== 导出进度 =====
+function exportProgress() {
+  const totalVocab = vocabDB.length;
+  const mastered = state.masteredWords.length;
+  const grammarDone = JSON.parse(localStorage.getItem('eng_grammar_done') || '[]');
+  const listenDone = JSON.parse(localStorage.getItem('eng_listen_done') || '[]');
+  const speakingDone = JSON.parse(localStorage.getItem('eng_speaking_done') || '[]');
+  const streak = parseInt(localStorage.getItem('eng_streak') || '0');
+  const today = new Date().toISOString().slice(0,10);
+
+  const vocabByCat = {};
+  vocabDB.forEach(v => { if (!vocabByCat[v.cat]) vocabByCat[v.cat] = { total: 0, done: 0 }; vocabByCat[v.cat].total++; if (state.masteredWords.includes(v.word)) vocabByCat[v.cat].done++; });
+
+  const progress = {
+    exported_at: new Date().toISOString(),
+    date: today,
+    streak: streak,
+    vocabulary: {
+      total: totalVocab,
+      mastered: mastered,
+      mastered_list: state.masteredWords,
+      by_category: vocabByCat
+    },
+    grammar: {
+      total: grammarDB.length,
+      completed: grammarDone.length,
+      completed_items: grammarDone.map(i => grammarDB[i].title)
+    },
+    listening: {
+      total: listenDB.length,
+      completed: listenDone.length,
+      completed_items: listenDone.map(i => listenDB[i].scene)
+    },
+    speaking: {
+      total: scenesDB.length,
+      completed: speakingDone.length,
+      completed_items: speakingDone.map(i => scenesDB[i].name)
+    }
+  };
+
+  const json = JSON.stringify(progress, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '英语通进度_' + today + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const msg = document.getElementById('exportMsg');
+  msg.style.display = 'block';
+  msg.style.color = 'var(--done)';
+  msg.textContent = '已导出！文件保存在下载文件夹。';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+// ===== 初始化 =====
+renderVocab();
+renderScenes();
+renderDialog();
+renderGrammar();
+renderListening();
+</script>
+</body>
+</html>
