@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1916">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>训练日历</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#111110;--card:#1c1b19;--card-border:rgba(255,255,255,.06);
+  --text:#e8e4dc;--muted:#7a756c;--faint:#4a4640;
+  --accent:#c4b69a;--accent-dim:rgba(196,182,154,.12);
+  --done:#7aad6a;--done-dim:rgba(122,173,106,.12);
+  --hard:#d4736a;--hard-dim:rgba(212,115,106,.12);
+  --easy:#7aad6a;--easy-dim:rgba(122,173,106,.12);
+  --radius:16px;--radius-sm:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.2);
+  --font:'DM Sans','Noto Sans SC',-apple-system,sans-serif;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#f5f3ef;--card:#fff;--card-border:rgba(0,0,0,.06);
+    --text:#2c2a26;--muted:#8a8578;--faint:#d5d0c8;
+    --accent:#7c6f5b;--accent-dim:rgba(124,111,91,.08);
+    --done:#6a9a5a;--done-dim:rgba(106,154,90,.08);
+    --hard:#c45c5c;--hard-dim:rgba(196,92,92,.08);
+    --easy:#6a9a5a;--easy-dim:rgba(106,154,90,.08);
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100%;min-height:100dvh;
+  padding:var(--safe-top) 16px calc(var(--safe-bottom) + 16px);
+  overflow-x:hidden;
+}
+.container{max-width:460px;margin:0 auto;padding-bottom:32px}
+
+/* Header */
+.header{text-align:center;padding:24px 0 16px;position:relative}
+.date-nav{display:flex;align-items:center;justify-content:center;gap:12px}
+.nav-btn{
+  width:40px;height:40px;border-radius:50%;border:1px solid var(--card-border);
+  background:var(--card);color:var(--muted);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.nav-btn:active{transform:scale(.92);background:var(--accent-dim);color:var(--accent)}
+.date-display{font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1.2}
+.date-sub{font-size:13px;color:var(--muted);margin-top:6px;font-weight:500}
+
+/* Card */
+.card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:18px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.card-label{
+  font-size:11px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--muted);font-weight:600;margin-bottom:14px;
+}
+
+/* Exercise */
+.exercise{
+  padding:12px 0;border-bottom:1px solid var(--card-border);
+  display:flex;align-items:flex-start;gap:12px;
+  transition:opacity .2s;
+}
+.exercise:last-child{border-bottom:none}
+.exercise.done-ex{opacity:.55}
+.ex-left{flex:1;min-width:0}
+.ex-name{font-size:15px;font-weight:600;line-height:1.3}
+.ex-name.main{color:var(--accent)}
+.ex-name.sub{color:var(--muted);font-weight:500}
+.ex-meta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+.ex-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+
+/* Weight input */
+.weight-wrap{display:flex;align-items:center;gap:2px}
+.weight-input{
+  width:48px;border:none;border-bottom:1.5px solid var(--faint);
+  background:transparent;color:var(--accent);font-size:14px;font-weight:600;
+  text-align:center;padding:2px 0;font-family:var(--font);
+  transition:border-color .2s;
+}
+.weight-input:focus{outline:none;border-color:var(--accent)}
+.weight-unit{font-size:11px;color:var(--muted);font-weight:500}
+
+/* Status buttons */
+.status-row{display:flex;gap:4px}
+.st-btn{
+  border:none;border-radius:6px;padding:5px 10px;font-size:11px;
+  cursor:pointer;font-weight:600;font-family:var(--font);
+  transition:all .15s;background:transparent;
+}
+.st-btn.hard{color:var(--hard);border:1px solid var(--hard-dim)}
+.st-btn.ok{color:var(--muted);border:1px solid var(--card-border)}
+.st-btn.easy{color:var(--easy);border:1px solid var(--easy-dim)}
+.st-btn.active.hard{background:var(--hard);color:#fff;border-color:var(--hard)}
+.st-btn.active.ok{background:var(--accent);color:#fff;border-color:var(--accent)}
+.st-btn.active.easy{background:var(--easy);color:#fff;border-color:var(--easy)}
+.st-btn:active{transform:scale(.93)}
+
+/* Done check */
+.done-ring{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--faint);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;
+}
+.done-ring:active{transform:scale(.88)}
+.done-ring.done{border-color:var(--done);background:var(--done)}
+.done-ring.done::after{content:'✓';font-size:14px;color:#fff;font-weight:700}
+
+/* Progress */
+.progress-section{padding:8px 0}
+.progress-track{height:6px;background:var(--faint);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--done),var(--accent));border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-label{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;font-weight:500}
+
+/* Pullup stage */
+.pullup-card{
+  background:var(--accent-dim);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-top:8px;
+}
+.pullup-num{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.pullup-title{font-size:13px;font-weight:700;color:var(--text);margin-top:2px}
+.pullup-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.pullup-detail{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.4}
+
+/* Rest */
+.rest-card{text-align:center;padding:48px 24px}
+.rest-icon{font-size:56px;margin-bottom:16px;opacity:.7}
+.rest-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.rest-sub{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* Footer */
+.footer{text-align:center;padding:20px 0;font-size:11px;color:var(--faint)}
+
+/* Install banner */
+.install-banner{
+  position:fixed;bottom:calc(var(--safe-bottom) + 16px);left:16px;right:16px;
+  background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+  padding:16px;display:none;align-items:center;gap:12px;
+  box-shadow:0 -4px 24px rgba(0,0,0,.3);z-index:100;
+  max-width:428px;margin:0 auto;
+}
+.install-banner.show{display:flex}
+.install-text{flex:1;font-size:13px;font-weight:500}
+.install-btn{
+  background:var(--accent);color:#111;border:none;border-radius:8px;
+  padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:var(--font);white-space:nowrap;
+}
+.install-btn:active{opacity:.8}
+.install-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px}
+
+/* Swipe hint */
+.swipe-hint{
+  text-align:center;padding:4px;font-size:11px;color:var(--faint);
+  opacity:0;transition:opacity .3s;
+}
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<div class="install-banner" id="installBanner">
+  <div class="install-text">添加到主屏幕，像 App 一样使用</div>
+  <button class="install-btn" onclick="installApp()">安装</button>
+  <button class="install-close" onclick="dismissInstall()">×</button>
+</div>
+
+<script>
+// === Config ===
+const START_DATE='2026-06-12';
+const PULLUP_STAGES=[
+  {num:'01',name:'沉肩启动',desc:'沉肩15次×4组 + 静态悬垂30秒×2组',detail:'悬挂后主动沉肩，肩胛骨带动身体上升，不要屈肘'},
+  {num:'02',name:'高位静态悬挂',desc:'高位悬挂12秒×4组 + 静态悬垂30秒×2组',detail:'跳上高位，下巴过杠位置悬挂，身体不晃'},
+  {num:'03',name:'离心慢放',desc:'跳上停留8秒+匀速下放6秒×4组',detail:'核心阶段，能多慢就多慢，不加速不砸地'},
+  {num:'04',name:'弹力带辅助引体',desc:'6-8次×4组，顶峰停顿1秒慢速下放',detail:'从重阻力85磅开始，轻松8次后换轻阻力65磅'},
+  {num:'05',name:'标准引体向上',desc:'3-5次×4组，循序渐进加次数',detail:'正手握杠略宽于肩，沉肩启动，背部发力'}
+];
+
+// === Day Plans ===
+function getDayPlan(ds){
+  const d=new Date(ds),dow=d.getDay();
+  if(dow===0)return{type:'rest',label:'休息日',icon:'🌙'};
+  const plans={
+    1:{type:'S+M',label:'力量 + 主线',icon:'💪',exercises:[
+      {name:'跪姿俯卧撑',sets:'4×12-15',w:'自重',k:'pushup',tip:'2秒下1秒上'},
+      {name:'哑铃划船（单臂）',sets:'3×12 每侧',w:'5',k:'row_l',tip:'俯身拉向腰侧',perSide:true,kR:'row_r'},
+      {name:'高脚杯深蹲',sets:'4×15',w:'8',k:'squat',tip:'哑铃持于胸前'},
+      {name:'引体向上进阶',sets:'按阶段',w:'—',k:'pullup',pullup:true},
+      {name:'★ 农夫行走',sets:'4×30米',w:'10',k:'farmer',tip:'挺胸收核心',main:true}
+    ]},
+    2:{type:'S+A',label:'力量 + 辅项A',icon:'🔄',exercises:[
+      {name:'跪姿俯卧撑',sets:'3×12',w:'自重',k:'pushup'},
+      {name:'深蹲',sets:'3×15',w:'自重',k:'squat'},
+      {name:'引体向上进阶',sets:'按阶段',w:'—',k:'pullup',pullup:true},
+      {name:'辅项A：负重旋转',sets:'3×12 每侧',w:'5',k:'rotate_l',tip:'站姿转体',perSide:true,kR:'rotate_r'}
+    ]},
+    3:{type:'C+M',label:'有氧 + 主线',icon:'🏃',exercises:[
+      {name:'快走/骑车/游泳',sets:'30-40分钟',w:'—',k:'cardio',tip:'能说话但有点喘',time:true},
+      {name:'★ 农夫行走',sets:'3×30米',w:'10',k:'farmer',main:true},
+      {name:'平板支撑',sets:'3×30-45秒',w:'自重',k:'plank',time:true}
+    ]},
+    4:{type:'S+M',label:'力量 + 主线',icon:'💪',exercises:[
+      {name:'跪姿俯卧撑',sets:'4×12-15',w:'自重',k:'pushup',tip:'2秒下1秒上'},
+      {name:'哑铃划船（单臂）',sets:'3×12 每侧',w:'5',k:'row_l',perSide:true,kR:'row_r'},
+      {name:'高脚杯深蹲',sets:'4×15',w:'8',k:'squat'},
+      {name:'引体向上进阶',sets:'按阶段',w:'—',k:'pullup',pullup:true},
+      {name:'★ 农夫行走',sets:'4×35米',w:'10',k:'farmer',tip:'比周一多5米',main:true}
+    ]},
+    5:{type:'C+M',label:'有氧 + 主线',icon:'🏃',exercises:[
+      {name:'快走/骑车/游泳',sets:'30-40分钟',w:'—',k:'cardio',time:true},
+      {name:'★ 农夫行走',sets:'3×35米',w:'10',k:'farmer',main:true},
+      {name:'死虫式',sets:'3×10 每侧',w:'自重',k:'deadbug',perSide:true}
+    ]},
+    6:{type:'C+B',label:'有氧 + 辅项B',icon:'⚡',exercises:[
+      {name:'快走/骑车/游泳',sets:'30-40分钟',w:'—',k:'cardio',time:true},
+      {name:'辅项B：跳绳',sets:'3×1分钟',w:'—',k:'jump',tip:'轻松跳找节奏',time:true},
+      {name:'平板支撑',sets:'3×30-45秒',w:'自重',k:'plank',time:true}
+    ]}
+  };
+  return plans[dow]||{type:'rest',label:'休息日',icon:'🌙'};
+}
+
+// === Data ===
+const DEF_W={pushup:'自重',row_l:'5',row_r:'5',squat:'8',farmer:'10',rotate_l:'5',rotate_r:'5',plank:'自重',deadbug:'自重'};
+function ld(){try{return JSON.parse(localStorage.getItem('td'))||{}}catch(e){return{}}}
+function sv(d){localStorage.setItem('td',JSON.stringify(d))}
+function gr(dk,k){const d=ld();return d[dk]&&d[dk][k]}
+function sr(dk,k,v){const d=ld();if(!d[dk])d[dk]={};d[dk][k]=v;sv(d)}
+function gps(){return parseInt(localStorage.getItem('ps')||'0')}
+function sps(s){localStorage.setItem('ps',String(s))}
+
+// === Helpers ===
+function fmtDate(ds){
+  const d=new Date(ds),m=d.getMonth()+1,day=d.getDate();
+  const wd=['日','一','二','三','四','五','六'];
+  return{full:`${m}月${day}日`,weekday:`星期${wd[d.getDay()]}`};
+}
+function addD(ds,n){const d=new Date(ds);d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
+let cur=new Date().toISOString().split('T')[0];
+
+// === Touch swipe ===
+let touchStartX=0;
+document.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchStartX;
+  if(Math.abs(dx)>60){changeDate(dx<0?1:-1)}
+},{passive:true});
+
+// === Render ===
+function render(){
+  const app=document.getElementById('app');
+  const plan=getDayPlan(cur);
+  const isRest=plan.type==='rest';
+  const rec=ld()[cur]||{};
+  const date=fmtDate(cur);
+  const isToday=cur===new Date().toISOString().split('T')[0];
+
+  let done=0,total=0;
+  if(!isRest)plan.exercises.forEach(ex=>{total++;if(rec[ex.k+'_done'])done++});
+
+  let h=`<div class="header">
+    <div class="date-nav">
+      <button class="nav-btn" onclick="changeDate(-1)">‹</button>
+      <div>
+        <div class="date-display">${date.full} ${isToday?'· 今天':''}</div>
+        <div class="date-sub">${date.weekday} · ${plan.icon} ${plan.label}</div>
+      </div>
+      <button class="nav-btn" onclick="changeDate(1)">›</button>
+    </div>
+  </div>`;
+
+  if(isRest){
+    h+=`<div class="card"><div class="rest-card">
+      <div class="rest-icon">🌙</div>
+      <div class="rest-title">今天休息</div>
+      <div class="rest-sub">散步、拉伸可以<br>不做力量训练</div>
+    </div></div>`;
+  }else{
+    h+=`<div class="card"><div class="card-label">今日训练</div>`;
+    plan.exercises.forEach(ex=>{
+      const done_=rec[ex.k+'_done']||false;
+      const st=rec[ex.k+'_status']||'';
+      const w=rec[ex.k+'_w']||DEF_W[ex.k]||'';
+      const nc=ex.main?'main':(ex.name.startsWith('辅项')?'sub':'');
+
+      h+=`<div class="exercise${done_?' done-ex':''}">
+        <div class="ex-left">
+          <div class="ex-name ${nc}">${ex.name}</div>
+          <div class="ex-meta">${ex.sets}${ex.tip?' · '+ex.tip:''}</div>`;
+
+      if(ex.pullup){
+        const s=gps();
+        if(s<PULLUP_STAGES.length){
+          const ps=PULLUP_STAGES[s];
+          h+=`<div class="pullup-card">
+            <div class="pullup-num">阶段 ${ps.num}/05</div>
+            <div class="pullup-title">${ps.name}</div>
+            <div class="pullup-desc">${ps.desc}</div>
+            <div class="pullup-detail">${ps.detail}</div>
+          </div>`;
+        }else{
+          h+=`<div class="pullup-card"><div class="pullup-num">已完成</div><div class="pullup-title">已解锁标准引体！</div></div>`;
+        }
+      }
+
+      h+=`</div><div class="ex-right">`;
+
+      if(!ex.time&&w!=='—'){
+        h+=`<div class="weight-wrap">
+          <input class="weight-input" type="number" inputmode="decimal" value="${w}" onchange="uw('${cur}','${ex.k}',this.value)">
+          <span class="weight-unit">kg</span>
+        </div>`;
+      }
+
+      if(!ex.time){
+        h+=`<div class="status-row">
+          <button class="st-btn hard${st==='hard'?' active':''}" onclick="us('${cur}','${ex.k}','hard')">困难</button>
+          <button class="st-btn ok${st==='ok'?' active':''}" onclick="us('${cur}','${ex.k}','ok')">刚好</button>
+          <button class="st-btn easy${st==='easy'?' active':''}" onclick="us('${cur}','${ex.k}','easy')">轻松</button>
+        </div>`;
+      }
+
+      h+=`<div class="done-ring${done_?' done':''}" onclick="td('${cur}','${ex.k}')"></div>`;
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+
+    if(total>0){
+      const pct=Math.round(done/total*100);
+      h+=`<div class="card"><div class="progress-section">
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label">${done} / ${total} 完成 · ${pct}%</div>
+      </div></div>`;
+    }
+  }
+
+  h+=`<div class="footer">数据保存在本地 · 左右滑动切换日期</div>`;
+  app.innerHTML=h;
+}
+
+// === Actions ===
+function changeDate(n){cur=addD(cur,n);render()}
+function td(dk,k){const r=ld()[dk]||{};sr(dk,k+'_done',!r[k+'_done']);render()}
+function us(dk,k,s){
+  const r=ld()[dk]||{};
+  const prev=r[k+'_status'];
+  const ns=prev===s?'':s;
+  sr(dk,k+'_status',ns);
+  if(ns&&r[k+'_w']){
+    let w=parseFloat(r[k+'_w']);
+    if(!isNaN(w)){
+      if(ns==='easy')w=Math.round((w+1)*10)/10;
+      else if(ns==='hard')w=Math.max(0,Math.round((w-1)*10)/10);
+      sr(dk,k+'_w',String(w));
+    }
+  }
+  render();
+}
+function uw(dk,k,v){sr(dk,k+'_w',v);render()}
+
+// === PWA Install ===
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.add('show')});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').classList.remove('show')})}}
+function dismissInstall(){document.getElementById('installBanner').classList.remove('show');localStorage.setItem('install_dismissed','1')}
+
+// === Service Worker ===
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+
+render();
+</script>
+</body>
+</html>
